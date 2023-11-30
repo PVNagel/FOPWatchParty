@@ -2,6 +2,6 @@
 {
     public interface IOMDbService
     {
-        Task<Movie> GetMovieDataAsync(string title);
+        Task<Movie> GetMovieByTitleDataAsync(string title);
     }
 }

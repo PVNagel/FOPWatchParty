@@ -8,24 +8,24 @@ using Microsoft.Extensions.Logging;
 namespace FOPMovieAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class MovieController : ControllerBase
+    [Route("api/[controller]")]
+    public class MoviesController : ControllerBase
     {
-        private readonly ILogger<MovieController> _logger;
+        private readonly ILogger<MoviesController> _logger;
         private readonly IOMDbService _omdbService;
 
-        public MovieController(ILogger<MovieController> logger, IOMDbService omdbService)
+        public MoviesController(ILogger<MoviesController> logger, IOMDbService omdbService)
         {
             _logger = logger;
             _omdbService = omdbService;
         }
 
-        [HttpGet(Name = "GetMovie")]
-        public async Task<ActionResult<Movie>> GetMovie()
+        [HttpGet("movie")]
+        public async Task<ActionResult<Movie>> GetMovieByTitle(string title)
         {
             try
             {
-                var movie = await _omdbService.GetMovieDataAsync("Braveheart");
+                var movie = await _omdbService.GetMovieByTitleDataAsync(title);
                 return Ok(movie);
             }
             catch (Exception ex)

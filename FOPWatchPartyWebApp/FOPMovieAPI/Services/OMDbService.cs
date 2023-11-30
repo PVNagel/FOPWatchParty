@@ -1,4 +1,5 @@
-﻿using FOPMovieAPI.Controllers;
+﻿using ClassLibrary.OMDb_API;
+using FOPMovieAPI.Controllers;
 using System.Text.Json;
 
 namespace FOPMovieAPI.Services
@@ -12,7 +13,7 @@ namespace FOPMovieAPI.Services
             _httpClient = httpClient;
         }
 
-        public async Task<Movie> GetMovieDataAsync(string title)
+        public async Task<Movie> GetMovieByTitleDataAsync(string title)
         {
             string apiUrl = $"https://www.omdbapi.com/?i=tt3896198&apikey=aaf8907d&t={title}";
             var response = await _httpClient.GetStringAsync(apiUrl);

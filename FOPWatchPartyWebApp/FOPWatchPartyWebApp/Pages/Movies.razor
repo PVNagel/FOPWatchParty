@@ -43,7 +43,7 @@ else
     {
         try
         {
-            movie = await Http.GetFromJsonAsync<Movie>("https://localhost:7055/movie");
+            movie = await Http.GetFromJsonAsync<Movie>("https://localhost:7055/api/movies/movie2");
         }
         catch (Exception ex)
         {
