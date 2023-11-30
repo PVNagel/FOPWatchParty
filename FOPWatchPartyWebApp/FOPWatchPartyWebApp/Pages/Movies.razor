@@ -1,0 +1,53 @@
+﻿@page "/movies"
+@using ClassLibrary.OMDb_API
+@using System.Net.Http
+@using System.Text.Json;
+@inject HttpClient Http
+
+<PageTitle>Movies</PageTitle>
+
+<h1>Movies</h1>
+
+@if (movie == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Year</th>
+                <th>Director</th>
+                <th>Awards</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@movie.Title</td>
+                <td>@movie.Year</td>
+                <td>@movie.Director</td>
+                <td>@movie.Awards</td>
+                <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private Movie? movie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            movie = await Http.GetFromJsonAsync<Movie>("https://localhost:7055/movie");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+        }
+    }
+}

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FOPWatchPartyWebApp", "FOPWatchPartyWebApp\FOPWatchPartyWebApp.csproj", "{FF74AC90-35A7-4EC9-847F-4ED3E47EABEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{3472A149-4F2D-4F55-BE60-76513C192954}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{3472A149-4F2D-4F55-BE60-76513C192954}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FOPMovieAPI", "FOPMovieAPI\FOPMovieAPI.csproj", "{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{3472A149-4F2D-4F55-BE60-76513C192954}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3472A149-4F2D-4F55-BE60-76513C192954}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3472A149-4F2D-4F55-BE60-76513C192954}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
