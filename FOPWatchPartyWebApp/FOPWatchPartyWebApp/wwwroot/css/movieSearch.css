@@ -1,0 +1,97 @@
+﻿h1 {
+    color: #333;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.search-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .search-button:hover {
+        background-color: #0056b3;
+    }
+
+.movie-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.movie-item {
+    text-align: center;
+    margin-bottom: 20px;
+    max-width: calc(25% - 20px);
+    flex-basis: calc(25% - 20px);
+    box-sizing: border-box;
+    position: relative;
+}
+
+    .movie-item img {
+        width: 100%;
+        height: auto;
+        max-width: 300px;
+        max-height: 450px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+.movie-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.movie-title {
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+    color: #333;
+}
+
+.movie-year {
+    color: #888;
+    margin-top: 5px;
+}
+
+.movie-details-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .movie-details-button:hover {
+        background-color: #0056b3;
+    }

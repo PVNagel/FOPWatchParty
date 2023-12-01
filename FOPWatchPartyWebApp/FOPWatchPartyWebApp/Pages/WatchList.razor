@@ -1,47 +1,60 @@
 ﻿@page "/watchlist"
+@using ClassLibrary.Models;
 @inject HttpClient httpClient
+@inject NavigationManager Navigation
 
-<h3>Watch List</h3>
+<link rel="stylesheet" href="/css/watchList.css" />
+
+<h1>Watch List</h1>
 
 @if (moviesToWatch == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>The movie watchlist is currently empty!</em></p>
 }
 else
 {
+    @if (moviesToWatch.Count == 0)
+    {
+        <p>Loading...</p>
+    }
+
     @if (moviesToWatch.Count > 0)
     {
         <table class="table">
             <thead>
                 <tr>
                     <th>Title</th>
+                    <th></th>
                     <th>Year</th>
                     <th>Director</th>
                     <th>Actors</th>
                     <th>IMDb rating</th>
                     <th>Awards</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var movie in moviesToWatch)
                 {
                     <tr>
-                        <td>@movie.Title</td>
+                        <td class="movie-link" @onclick="() => MovieDetails(movie)">
+                            <strong style="font-size: 18px;">@movie.Title</strong>
+                        </td>
+                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
                         <td>@movie.Year</td>
                         <td>@movie.Director</td>
                         <td>@movie.Actors</td>
-                        <td>@movie.imdbRating / 10
-                            <br/>@movie.imdbVotes</td>
+                        <td>@movie.imdbRating / 10<br/>(@movie.imdbVotes)</td>
                         <td>@movie.Awards</td>
-                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
                         <td>
-                            <button @onclick="() => MarkAsWatched(movie)">Watched</button>
-                            <button @onclick="() => RemoveFromWatchlist(movie)">Remove</button>
+                            <div class="button-container">
+                                <button class="action-button" @onclick="() => MarkAsWatched(movie)">Watched</button>
+                                <button class="action-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
+                            </div>
                         </td>
                     </tr>
                 }
             </tbody>
+
         </table>
     }
 }
@@ -54,33 +67,43 @@ else
     {
         try
         {
-            // Temp SeedData
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=braveheart");
-            moviesToWatch.Add(movie);
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=the+departed");
-            moviesToWatch.Add(movie);
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=the+dark+knight");
-            moviesToWatch.Add(movie);
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=shutter+island");
-            moviesToWatch.Add(movie);
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=good+will+hunting");
-            moviesToWatch.Add(movie);
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/WatchList/GetAllFromWatchList");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+            Console.WriteLine($"Error fetching watchlist: {ex.Message}");
         }
     }
 
     private void MarkAsWatched(Movie movie)
     {
         // Implement logic to remove the movie from the watch list and add to watched list
-
     }
 
-    private void RemoveFromWatchlist(Movie movie)
+    private async Task RemoveFromWatchlist(Movie movie)
     {
-        // Implement logic to remove the movie from the watch list
+        try
+        {
+            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/WatchList/DeleteFromWatchList?imdbID={movie.imdbID}");
 
+            if (response.IsSuccessStatusCode)
+            {
+                moviesToWatch.Remove(movie);
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine($"Error adding movie to the watchlist. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding movie to the watchlist: {ex.Message}");
+        }
+    }
+
+    private void MovieDetails(Movie movie)
+    {
+        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }

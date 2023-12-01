@@ -1,4 +1,4 @@
-﻿using ClassLibrary.OMDb_API;
+﻿using ClassLibrary.Models;
 using FOPMovieAPI.Controllers;
 using System.Text.Json;
 
@@ -13,9 +13,16 @@ namespace FOPMovieAPI.Services
             _httpClient = httpClient;
         }
 
+        public async Task<Movie> GetMovieByIdDataAsync(string imdbID)
+        {
+            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&i={imdbID}";
+            var response = await _httpClient.GetStringAsync(apiUrl);
+            return JsonSerializer.Deserialize<Movie>(response);
+        }
+
         public async Task<Movie> GetMovieByTitleDataAsync(string title)
         {
-            string apiUrl = $"https://www.omdbapi.com/?i=tt3896198&apikey=aaf8907d&t={title}";
+            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&t={title}";
             var response = await _httpClient.GetStringAsync(apiUrl);
             return JsonSerializer.Deserialize<Movie>(response);
         }
@@ -26,7 +33,5 @@ namespace FOPMovieAPI.Services
             var response = await _httpClient.GetStringAsync(apiUrl);
             return JsonSerializer.Deserialize<Root>(response);
         }
-
-
     }
 }

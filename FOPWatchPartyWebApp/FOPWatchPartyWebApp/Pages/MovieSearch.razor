@@ -1,49 +1,40 @@
 ﻿@page "/moviesearch"
-@using ClassLibrary.OMDb_API;
+@using ClassLibrary.Models;
 @using System.Text.Json;
-@inject HttpClient Http
+@using System.Text;
+@inject IJSRuntime JSRuntime
+@inject HttpClient httpClient
+@inject NavigationManager Navigation
+
+<link rel="stylesheet" href="/css/movieSearch.css" />
 
 <PageTitle>Search for Movie</PageTitle>
 
 <h1>Search for Movie</h1>
 
-<p>Here you can add a movie to the watchlist </p>
-
 <form @onsubmit="SearchForMovie">
     <InputText @bind-Value="movieTitle" />
-    <button type="submit" class="btn btn-primary"> Search </button>
 </form>
 
 @if (movies == null)
 {
-    <p><em>Waiting for search...</em></p>
 }
 else
 {
     @if (movies.Count > 0)
     {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Year</th>
-                    <th>imdbID</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in movies)
-                {
-                    <tr>
-                        <td><a href="@($"https://localhost:7055/api/Movies/movie?title={movie.Title}")" target="_blank">@movie.Title</a></td>
-                        <td>@movie.Year</td>
-                        <td>@movie.imdbID</td>
-                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150"/></td>
-                    </tr>
-                }
-
-            </tbody>
-        </table>
+        <div class="movie-container">
+            @foreach (var movie in movies)
+            {
+                <div class="movie-item">
+                    <img src="@movie.Poster" @onclick="() => MovieDetails(movie)" />
+                    <div class="movie-details">
+                        <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
+                        <div class="movie-year">@movie.Year</div>
+                    </div>
+                </div>
+            }
+        </div>
     }
     else
     {
@@ -51,7 +42,7 @@ else
     }
 }
 
-<button class="btn btn-primary" @onclick="AddMovieToWatchlist"> Add </button>
+
 
 @code {
     private string movieTitle = "";
@@ -65,7 +56,7 @@ else
             if (!string.IsNullOrWhiteSpace(movieTitle))
             {
                 movies = new List<Movie>();
-                Root root = await Http.GetFromJsonAsync<Root>($"https://localhost:7055/api/Movies/moviesBySearch?title={movieTitle}");
+                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/Movies/GetMoviesBySearch?title={movieTitle}");
 
                 foreach (Search search in root.Search)
                 {
@@ -74,7 +65,7 @@ else
                             Title = search.Title,
                             Year = search.Year,
                             imdbID = search.imdbID,
-                            Poster = search.Poster
+                            Poster = search.Poster == "N/A" ? "https://i.imgur.com/l1wt1eN.jpg" : search.Poster
                         };
                     movies.Add(newMovie);
                 }
@@ -86,8 +77,38 @@ else
         }
     }
 
-    private void AddMovieToWatchlist()
+    private async Task AddMovieToWatchlist(Movie movie)
     {
-        throw new NotImplementedException();    
+        try
+        {
+            if (movie != null)
+            {
+                var response = await httpClient.PostAsync($"https://localhost:7055/api/WatchList/AddToWatchList?imdbID={movie.imdbID}", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie has been added to the watchlist");
+                }
+                else
+                {
+                    Console.WriteLine($"Error adding movie to the watchlist. Status code: {response.StatusCode}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding movie to the watchlist: {ex.Message}");
+        }
+    }
+
+    private void MovieDetails(Movie movie)
+    {
+        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }
+
+<script>
+    function showConfirmationDialog(message) {
+        alert(message);
+    }
+</script>

@@ -1,14 +1,18 @@
 ﻿@page "/movies"
-@using ClassLibrary.OMDb_API
+
+@using ClassLibrary.Models
 @using System.Net.Http
 @using System.Text.Json;
 @inject HttpClient httpClient
+@inject NavigationManager Navigation
+
+<link rel="stylesheet" href="/css/movies.css" />
 
 <PageTitle>Movies</PageTitle>
 
 <h1>Movies</h1>
 
-@if (movie == null)
+@if (movieList == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -18,36 +22,64 @@ else
         <thead>
             <tr>
                 <th>Title</th>
-                <th>Year</th>
+                <th>Released</th>
+                <th>Genre</th>
                 <th>Director</th>
+                <th>Actors</th>
+                <th>IMDb</th>
+                <th>Runtime</th>
                 <th>Awards</th>
-                <th></th>
+                <th>Poster</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>@movie.Title</td>
-                <td>@movie.Year</td>
-                <td>@movie.Director</td>
-                <td>@movie.Awards</td>
-                <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
-            </tr>
+            @foreach (var movie in movieList)
+            {
+                <tr>
+                    <td class="movie-link" @onclick="() => MovieDetails(movie)">@movie.Title</td>
+                    <td>@movie.Released</td>
+                    <td>@movie.Genre</td>
+                    <td>@movie.Director</td>
+                    <td>@movie.Actors</td>
+                    <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
+                    <td>@movie.Runtime</td>
+                    <td>@movie.Awards</td>
+                    <td>
+                        @if (movie.Poster == "N/A")
+                        {
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="100" height="150" />
+                        }
+                        else
+                        {
+                            <img src="@movie.Poster" alt="Movie Poster" width="100" height="150" />
+                        }
+                    </td>
+
+                </tr>
+            }
         </tbody>
     </table>
+
 }
 
 @code {
     private Movie? movie;
+    private List<Movie>? movieList;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=Braveheart");
+            movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/Movies/GetAllMoviesFromDb");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching movie data: {ex.Message}");
         }
+    }
+
+    private void MovieDetails(Movie movie)
+    {
+        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }

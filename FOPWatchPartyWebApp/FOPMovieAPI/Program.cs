@@ -1,8 +1,13 @@
+using FOPMovieAPI.Data;
 using FOPMovieAPI.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<FOPDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("FOPDbContext") ?? throw new InvalidOperationException("Connection string 'FOPDbContext' not found.")));
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

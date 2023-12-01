@@ -1,0 +1,58 @@
+﻿.movie-details {
+    text-align: left;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+h1 {
+    color: #333;
+    text-align: Left;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.details-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.poster-section {
+    margin-right: 50px;
+}
+
+.table-container {
+    flex-grow: 1;
+    margin-top: 10px;
+}
+
+.table {
+    width: 100%;
+}
+
+.button-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.watchlist-button {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .watchlist-button:hover {
+        background: linear-gradient(180deg, #003366 0%, #3a0647 70%);
+    }

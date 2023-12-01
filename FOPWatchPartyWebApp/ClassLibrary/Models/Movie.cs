@@ -1,4 +1,5 @@
-﻿using ClassLibrary.OMDb_API;
+﻿using ClassLibrary.Models;
+using System.ComponentModel.DataAnnotations;
 
 public class Movie
 {
@@ -20,12 +21,12 @@ public class Movie
     public string? Metascore { get; set; }
     public string? imdbRating { get; set; }
     public string? imdbVotes { get; set; }
-    public string? imdbID { get; set; }
+    [Key]
+    public string imdbID { get; set; }
     public string? Type { get; set; }
     public string? DVD { get; set; }
     public string? BoxOffice { get; set; }
     public string? Production { get; set; }
     public string? Website { get; set; }
     public string? Response { get; set; }
-    
 }
