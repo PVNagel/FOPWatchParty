@@ -2,7 +2,7 @@
 @using ClassLibrary.OMDb_API
 @using System.Net.Http
 @using System.Text.Json;
-@inject HttpClient Http
+@inject HttpClient httpClient
 
 <PageTitle>Movies</PageTitle>
 
@@ -43,7 +43,7 @@ else
     {
         try
         {
-            movie = await Http.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=Braveheart");
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=Braveheart");
         }
         catch (Exception ex)
         {

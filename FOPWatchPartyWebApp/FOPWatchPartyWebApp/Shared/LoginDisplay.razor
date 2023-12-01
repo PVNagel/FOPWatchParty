@@ -4,7 +4,7 @@
 
 <AuthorizeView>
     <Authorized>
-        @context.User.Identity?.Name
+        <a @onclick="GoToUserProfile"> @context.User.Identity?.Name</a>
         <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
     </Authorized>
     <NotAuthorized>
@@ -16,5 +16,10 @@
     private void BeginLogOut()
     {
         Navigation.NavigateToLogout("authentication/logout");
+    }
+
+    private void GoToUserProfile()
+    {
+        Navigation.NavigateTo("/userprofile");
     }
 }

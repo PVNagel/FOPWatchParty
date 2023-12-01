@@ -1,0 +1,86 @@
+﻿@page "/watchlist"
+@inject HttpClient httpClient
+
+<h3>Watch List</h3>
+
+@if (moviesToWatch == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (moviesToWatch.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Director</th>
+                    <th>Actors</th>
+                    <th>IMDb rating</th>
+                    <th>Awards</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in moviesToWatch)
+                {
+                    <tr>
+                        <td>@movie.Title</td>
+                        <td>@movie.Year</td>
+                        <td>@movie.Director</td>
+                        <td>@movie.Actors</td>
+                        <td>@movie.imdbRating / 10
+                            <br/>@movie.imdbVotes</td>
+                        <td>@movie.Awards</td>
+                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
+                        <td>
+                            <button @onclick="() => MarkAsWatched(movie)">Watched</button>
+                            <button @onclick="() => RemoveFromWatchlist(movie)">Remove</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private Movie? movie;
+    private List<Movie>? moviesToWatch = new List<Movie>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Temp SeedData
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=braveheart");
+            moviesToWatch.Add(movie);
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=the+departed");
+            moviesToWatch.Add(movie);
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=the+dark+knight");
+            moviesToWatch.Add(movie);
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=shutter+island");
+            moviesToWatch.Add(movie);
+            movie = await httpClient.GetFromJsonAsync<Movie>("https://localhost:7055/api/Movies/movie?title=good+will+hunting");
+            moviesToWatch.Add(movie);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+        }
+    }
+
+    private void MarkAsWatched(Movie movie)
+    {
+        // Implement logic to remove the movie from the watch list and add to watched list
+
+    }
+
+    private void RemoveFromWatchlist(Movie movie)
+    {
+        // Implement logic to remove the movie from the watch list
+
+    }
+}

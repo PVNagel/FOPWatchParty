@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FOPWatchPartyWebApp", "FOPW
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{3472A149-4F2D-4F55-BE60-76513C192954}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FOPMovieAPI", "FOPMovieAPI\FOPMovieAPI.csproj", "{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FOPMovieAPI", "FOPMovieAPI\FOPMovieAPI.csproj", "{86D0DBD7-14F7-4664-B98E-EA0B6DBDF12F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
