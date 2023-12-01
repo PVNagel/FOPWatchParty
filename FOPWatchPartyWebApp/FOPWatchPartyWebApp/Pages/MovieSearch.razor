@@ -1,11 +1,11 @@
-﻿@page "/addMovie"
+﻿@page "/movieSearch"
 @using ClassLibrary.OMDb_API;
 @using System.Text.Json;
 @inject HttpClient Http
 
-<PageTitle>Add Movie</PageTitle>
+<PageTitle>Search for Movie</PageTitle>
 
-<h1>Add Movie</h1>
+<h1>Search for Movie</h1>
 
 <p>Here you can add a movie to the watchlist </p>
 
@@ -88,6 +88,6 @@ else
 
     private void AddMovieToWatchlist()
     {
-        // Implementation for adding a movie to the watchlist
+        throw NotImplementedException();
     }
 }
