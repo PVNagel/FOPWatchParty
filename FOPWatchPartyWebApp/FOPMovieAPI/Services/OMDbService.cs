@@ -19,5 +19,14 @@ namespace FOPMovieAPI.Services
             var response = await _httpClient.GetStringAsync(apiUrl);
             return JsonSerializer.Deserialize<Movie>(response);
         }
+
+        public async Task<Root> GetMoviesBySearchDataAsync(string title)
+        {
+            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&s={title}&page=1";
+            var response = await _httpClient.GetStringAsync(apiUrl);
+            return JsonSerializer.Deserialize<Root>(response);
+        }
+
+
     }
 }

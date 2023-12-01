@@ -1,0 +1,93 @@
+﻿@page "/addMovie"
+@using ClassLibrary.OMDb_API;
+@using System.Text.Json;
+@inject HttpClient Http
+
+<PageTitle>Add Movie</PageTitle>
+
+<h1>Add Movie</h1>
+
+<p>Here you can add a movie to the watchlist </p>
+
+<form @onsubmit="SearchForMovie">
+    <InputText @bind-Value="movieTitle" />
+    <button type="submit" class="btn btn-primary"> Search </button>
+</form>
+
+@if (movies == null)
+{
+    <p><em>Waiting for search...</em></p>
+}
+else
+{
+    @if (movies.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>imdbID</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in movies)
+                {
+                    <tr>
+                        <td><a href="@($"https://localhost:7055/api/Movies/movie?title={movie.Title}")" target="_blank">@movie.Title</a></td>
+                        <td>@movie.Year</td>
+                        <td>@movie.imdbID</td>
+                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No movies found.</p>
+    }
+}
+
+<button class="btn btn-primary" @onclick="AddMovieToWatchlist"> Add </button>
+
+@code {
+    private string movieTitle = "";
+    private List<Movie>? movies;
+    private Movie? movie;
+
+    private async Task SearchForMovie()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(movieTitle))
+            {
+                movies = new List<Movie>();
+                Root root = await Http.GetFromJsonAsync<Root>($"https://localhost:7055/api/Movies/moviesBySearch?title={movieTitle}");
+
+                foreach (Search search in root.Search)
+                {
+                    var newMovie = new Movie
+                        {
+                            Title = search.Title,
+                            Year = search.Year,
+                            imdbID = search.imdbID,
+                            Poster = search.Poster
+                        };
+                    movies.Add(newMovie);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+        }
+    }
+
+    private void AddMovieToWatchlist()
+    {
+        // Implementation for adding a movie to the watchlist
+    }
+}
