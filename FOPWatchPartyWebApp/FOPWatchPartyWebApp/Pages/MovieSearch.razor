@@ -1,20 +1,16 @@
 ﻿@page "/moviesearch"
-@using ClassLibrary.Models;
-@using System.Text.Json;
-@using System.Text;
 @using System.Net;
-@inject IJSRuntime JSRuntime
+@using ClassLibrary.Models;
+
 @inject HttpClient httpClient
-@inject NavigationManager Navigation
+@inject NavigationManager navigation
+@inject IJSRuntime JSRuntime
 
-<link rel="stylesheet" href="/css/movieSearch.css" />
+<h1 class="search-heading">Search for Movie</h1>
 
-<PageTitle>Search for Movie</PageTitle>
-
-<h1>Search for Movie</h1>
-
-<form @onsubmit="SearchForMovie">
-    <InputText @bind-Value="movieTitle" />
+<form class="search-form" @onsubmit="SearchForMovie">
+    <InputText class="search-input" @bind-Value="movieTitle" />
+    <button type="submit" class="search-button">Search</button>
 </form>
 
 @if (movies == null)
@@ -28,24 +24,23 @@ else
             @foreach (var movie in movies)
             {
                 <div class="movie-item">
-                    <img src="@movie.Poster" @onclick="() => MovieDetails(movie)" />
+                    <img src="@movie.Poster" class="movie-poster" @onclick="() => MovieDetails(movie)" />
                     <div class="movie-details">
                         <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
                         <div class="movie-year">@movie.Year</div>
                     </div>
+                    <button class="movie-add-button" @onclick="() => AddMovieToWatchlist(movie)">Add to Watchlist</button>
                 </div>
             }
         </div>
     }
     else
     {
-        <p>Loading...</p>
+        <p class="loading-message">Loading...</p>
     }
 }
 
-
-
-@code {
+@code{
     private string movieTitle = "";
     private List<Movie>? movies;
     private Movie? movie;
@@ -88,11 +83,11 @@ else
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie has been added to the watchlist");
+                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie has been added to the watchlist");
                 }
                 else if (response.StatusCode == HttpStatusCode.Conflict)
                 {
-                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie is already in the watchlist");
+                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie is already in the watchlist");
                 }
                 else
                 {
@@ -106,15 +101,14 @@ else
         }
     }
 
-
     private void MovieDetails(Movie movie)
     {
-        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+        navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }
 
 <script>
-    function showDialog(message) {
+    function showConfirmationDialog(message) {
         alert(message);
     }
 </script>

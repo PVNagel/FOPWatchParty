@@ -1,14 +1,8 @@
 ﻿@page "/movies"
 
-@using ClassLibrary.Models
-@using System.Net.Http
-@using System.Text.Json;
+@using System.Globalization;
 @inject HttpClient httpClient
-@inject NavigationManager Navigation
-
-<link rel="stylesheet" href="/css/movies.css" />
-
-<PageTitle>Movies</PageTitle>
+@inject NavigationManager navigation
 
 <h1>Movies</h1>
 
@@ -21,22 +15,39 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Released</th>
+                <th @onclick="@(() => SortMoviesBy("Title"))">
+                    Title @RenderSortIcon("Title")
+                </th>
+                <th @onclick="@(() => SortMoviesBy("Released"))">
+                    <div class="header-content">
+                        Released
+                        <span class="sort-icon">@RenderSortIcon("Released")</span>
+                    </div>
+                </th>
                 <th>Genre</th>
                 <th>Director</th>
                 <th>Actors</th>
-                <th>IMDb</th>
-                <th>Runtime</th>
+                <th @onclick="@(() => SortMoviesBy("IMDb"))">
+                    <div class="header-content">
+                        IMDb
+                        <span class="sort-icon">@RenderSortIcon("IMDb")</span>
+                    </div>
+                </th>
+                <th @onclick="@(() => SortMoviesBy("Runtime"))">
+                    <div class="header-content">
+                        Runtime
+                        <span class="sort-icon">@RenderSortIcon("Runtime")</span>
+                    </div>
+                </th>
                 <th>Awards</th>
-                <th>Poster</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var movie in movieList)
             {
                 <tr>
-                    <td class="movie-link" @onclick="() => MovieDetails(movie)">@movie.Title</td>
+                    <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
                     <td>@movie.Released</td>
                     <td>@movie.Genre</td>
                     <td>@movie.Director</td>
@@ -44,42 +55,140 @@ else
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
                     <td>@movie.Runtime</td>
                     <td>@movie.Awards</td>
-                    <td>
+                    <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
                         {
-                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="100" height="150" />
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="150" height="250" />
                         }
                         else
                         {
-                            <img src="@movie.Poster" alt="Movie Poster" width="100" height="150" />
+                            <img src="@movie.Poster" alt="Movie Poster" width="150" height="250" />
                         }
                     </td>
-
                 </tr>
             }
         </tbody>
     </table>
-
 }
 
-@code {
+@code{
     private Movie? movie;
     private List<Movie>? movieList;
+    private string? sortBy;
+    private bool sortAsc = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/movies/all");
+
+            // Check if movieList is not null before sorting
+            if (movieList != null && movieList.Any())
+            {
+                SortMoviesBy("IMDb");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching movie data: {ex.Message}");
+
+            // Output additional exception details
+            Console.WriteLine($"Exception type: {ex.GetType().FullName}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
+            // Check for HttpRequestException and output inner exception details
+            if (ex is HttpRequestException httpException && httpException.InnerException != null)
+            {
+                Console.WriteLine($"InnerException type: {httpException.InnerException.GetType().FullName}");
+                Console.WriteLine($"InnerException message: {httpException.InnerException.Message}");
+                Console.WriteLine($"InnerException StackTrace: {httpException.InnerException.StackTrace}");
+            }
         }
+
     }
+
+
+    private void SortMoviesBy(string attribute)
+    {
+        if (movieList == null)
+        {
+            return;
+        }
+
+        if (sortBy == attribute)
+        {
+            // Toggle sorting order if the same attribute is clicked again
+            sortAsc = !sortAsc;
+        }
+        else
+        {
+            // Change sorting attribute and set ascending order by default
+            sortBy = attribute;
+            sortAsc = false;
+        }
+
+        // Perform sorting based on the selected attribute
+        switch (attribute)
+        {
+            case "Title":
+                movieList = sortAsc ? movieList.OrderByDescending(m => m.Title).ToList()
+                                    : movieList.OrderBy(m => m.Title).ToList(); break;
+            case "Released":
+                movieList = sortAsc ? movieList.OrderBy(m => ConvertToDateTime(m.Released)).ToList()
+                                    : movieList.OrderByDescending(m => ConvertToDateTime(m.Released)).ToList(); break;
+            case "IMDb":
+                movieList = sortAsc ? movieList.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
+                                    : movieList.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
+            case "Runtime":
+                movieList = sortAsc ? movieList.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
+                                    : movieList.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string RatingNotAvailableCheck(string imdbRating)
+    {
+        // Treat "N/A" as the lowest value
+        if (imdbRating == "N/A")
+        {
+            return "0.0";
+        }
+        return imdbRating;
+    }
+
+    private DateTime ConvertToDateTime(string dateString)
+    {
+        if (DateTime.TryParseExact(dateString, "dd MMM yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+        {
+            return result;
+        }
+        // Return DateTime.MinValue if parsing fails
+        return DateTime.MinValue;
+    }
+
+    private int GetRuntimeInMinutes(string runtime)
+    {
+        // Extract the numerical part of the runtime string and convert it to an integer
+        if (int.TryParse(new string(runtime.Where(char.IsDigit).ToArray()), out int minutes))
+        {
+            return minutes;
+        }
+        return 0; // Return 0 if parsing fails
+    }
+
+    private string RenderSortIcon(string column)
+    {
+        if (sortBy == column)
+        {
+            return sortAsc ? "🔼" : "🔽"; // Up arrow for ascending, down arrow for descending
+        }
+        return string.Empty;
+    }
+
 
     private void MovieDetails(Movie movie)
     {
-        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+        navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }
