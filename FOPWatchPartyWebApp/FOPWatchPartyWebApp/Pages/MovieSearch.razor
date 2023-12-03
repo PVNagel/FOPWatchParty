@@ -2,6 +2,7 @@
 @using ClassLibrary.Models;
 @using System.Text.Json;
 @using System.Text;
+@using System.Net;
 @inject IJSRuntime JSRuntime
 @inject HttpClient httpClient
 @inject NavigationManager Navigation
@@ -56,7 +57,7 @@ else
             if (!string.IsNullOrWhiteSpace(movieTitle))
             {
                 movies = new List<Movie>();
-                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/Movies/GetMoviesBySearch?title={movieTitle}");
+                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/movies/search/{movieTitle}");
 
                 foreach (Search search in root.Search)
                 {
@@ -83,11 +84,15 @@ else
         {
             if (movie != null)
             {
-                var response = await httpClient.PostAsync($"https://localhost:7055/api/WatchList/AddToWatchList?imdbID={movie.imdbID}", null);
+                var response = await httpClient.PostAsync($"https://localhost:7055/api/watchlist/add?imdbID={movie.imdbID}", null);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie has been added to the watchlist");
+                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie has been added to the watchlist");
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie is already in the watchlist");
                 }
                 else
                 {
@@ -101,6 +106,7 @@ else
         }
     }
 
+
     private void MovieDetails(Movie movie)
     {
         Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
@@ -108,7 +114,7 @@ else
 }
 
 <script>
-    function showConfirmationDialog(message) {
+    function showDialog(message) {
         alert(message);
     }
 </script>

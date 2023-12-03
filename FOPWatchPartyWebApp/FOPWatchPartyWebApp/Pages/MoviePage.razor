@@ -3,6 +3,7 @@
 @using ClassLibrary.Models;
 @using System.Text.Json;
 @using System.Text;
+@using System.Net;
 @inject IJSRuntime JSRuntime
 @inject HttpClient httpClient
 @inject NavigationManager Navigation
@@ -83,7 +84,7 @@
     {
         try
         {
-            movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/Movies/GetMovieById?imdbID={imdbID}");
+            movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/{imdbID}");
         }
         catch (Exception ex)
         {
@@ -97,11 +98,15 @@
         {
             if (movie != null)
             {
-                var response = await httpClient.PostAsync($"https://localhost:7055/api/WatchList/AddToWatchList?imdbID={movie.imdbID}", null);
+                var response = await httpClient.PostAsync($"https://localhost:7055/api/watchlist/add?imdbID={ movie.imdbID}", null);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie has been added to the watchlist. Or ignored if it is already on the list.");
+                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie has been added to the watchlist.");
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    await JSRuntime.InvokeVoidAsync("showDialog", "Movie is already in the watchlist.");
                 }
                 else
                 {

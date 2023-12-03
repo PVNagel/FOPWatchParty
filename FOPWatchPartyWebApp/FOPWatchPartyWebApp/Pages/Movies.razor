@@ -70,7 +70,7 @@ else
     {
         try
         {
-            movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/Movies/GetAllMoviesFromDb");
+            movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/movies/all");
         }
         catch (Exception ex)
         {
