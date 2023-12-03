@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace FOPMovieAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/movies")]
     public class MoviesController : Controller
     {
         private readonly ILogger<MoviesController> _logger;
@@ -25,8 +25,8 @@ namespace FOPMovieAPI.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpGet("GetAllMoviesFromDb")]
-        public async Task<IActionResult> GetAllMoviesFromDb()
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllMovies()
         {
             try
             {
@@ -40,59 +40,44 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
-        [HttpPost("AddMovieToDb")]
-        public async Task<IActionResult> AddMovieToDb(string imdbID)
+        [HttpPost("add")]
+        public async Task<IActionResult> AddMovie(string imdbID)
         {
-            // Check if the movie already exists in the local database
-            var existingMovie = _dbContext.Movies.FirstOrDefault(m => m.imdbID == imdbID);
-
-            if (existingMovie == null)
+            try
             {
-                // Get movie from external API
-                var movie = await _omdbService.GetMovieByIdDataAsync(imdbID);
+                var movie = await RetrieveMovieFromDbOrApi(imdbID);
 
                 if (movie != null)
                 {
-                    _dbContext.Movies.Add(movie);
-                    await _dbContext.SaveChangesAsync();
-
                     return Ok("Movie added to the database");
                 }
-                return NotFound("Can not add to db, movie not found in API");
+                else
+                {
+                    return Ok("Movie is already in database or could not be found");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return Ok("Movie is already in database");
+                _logger.LogError($"Error adding movie to the database: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
             }
         }
 
-        [HttpGet("GetMovieById")]
+        [HttpGet("imdb-id/{imdbID}")]
         public async Task<IActionResult> GetMovieById(string imdbID)
         {
             try
             {
-                // Check if the movie already exists in the local database
-                var existingMovie = _dbContext.Movies.FirstOrDefault(m => m.imdbID == imdbID);
-
-                if (existingMovie != null)
-                {
-                    return Ok(existingMovie);
-                }
-
-                // Call external API for movie
-                var movie = await _omdbService.GetMovieByIdDataAsync(imdbID);
+                var movie = await RetrieveMovieFromDbOrApi(imdbID);
 
                 if (movie != null)
                 {
-                    _dbContext.Movies.Add(movie);
-                    _dbContext.SaveChanges();
+                    return Ok(movie);
                 }
                 else
                 {
                     return BadRequest("Invalid IMDb ID or movie not found");
                 }
-
-                return Ok(movie);
             }
             catch (Exception ex)
             {
@@ -101,12 +86,12 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
-        [HttpGet("GetMovieByTitle")]
+        [HttpGet("title/{title}")]
         public async Task<ActionResult<Movie>> GetMovieByTitle(string title)
         {
             try
             {
-                var movie = await _omdbService.GetMovieByTitleDataAsync(title);
+                var movie = await _omdbService.GetMovieByTitleAsync(title);
                 return Ok(movie);
             }
             catch (Exception ex)
@@ -116,27 +101,52 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
-        [HttpGet("GetMoviesBySearch")]
+        [HttpGet("search/{title}")]
         public async Task<ActionResult<Root>> GetMoviesBySearch(string title)
         {
             try
             {
-                var root = await _omdbService.GetMoviesBySearchDataAsync(title);
-                
-                if (root != null)
+                var search = await _omdbService.SearchMoviesAsync(title);
+
+                if (search != null)
                 {
-                    return Ok(root);
+                    return Ok(search);
                 }
                 else
                 {
                     return NotFound();
                 }
             }
+
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting movie data: {ex.Message}");
+                _logger.LogError($"Error getting movie search: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
+        }
+
+        private async Task<Movie> RetrieveMovieFromDbOrApi(string imdbID)
+        {
+
+            // Check if the movie already exists in the local database
+            var existingMovie = _dbContext.Movies.FirstOrDefault(m => m.imdbID == imdbID);
+
+            if (existingMovie != null)
+            {
+                return existingMovie;
+            }
+
+            // Call external API for movie
+            Movie movie = await _omdbService.GetMovieByIdAsync(imdbID);
+
+            if (movie != null)
+            {
+                _dbContext.Movies.Add(movie);
+                _dbContext.SaveChanges();
+                return movie;
+            }
+            // Movie not found in both local database and external API
+            return null;
         }
     }
 }

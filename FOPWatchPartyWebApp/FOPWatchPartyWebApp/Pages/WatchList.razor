@@ -3,9 +3,9 @@
 @inject HttpClient httpClient
 @inject NavigationManager Navigation
 
-<link rel="stylesheet" href="/css/watchList.css" />
+<link rel="stylesheet" href="/css/watchlist.css" />
 
-<h1>Watch List</h1>
+<h1>Watchlist</h1>
 
 @if (moviesToWatch == null)
 {
@@ -67,7 +67,7 @@ else
     {
         try
         {
-            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/WatchList/GetAllFromWatchList");
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get");
         }
         catch (Exception ex)
         {
@@ -84,7 +84,7 @@ else
     {
         try
         {
-            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/WatchList/DeleteFromWatchList?imdbID={movie.imdbID}");
+            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
 
             if (response.IsSuccessStatusCode)
             {
