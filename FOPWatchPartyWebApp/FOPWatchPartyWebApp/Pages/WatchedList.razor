@@ -42,14 +42,7 @@ else
         </table>
     }
 }
-
-
-@code {
-    List<Movie> moviesWatched = new List<Movie>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        
-    }
+@code{
+    private List<Movie>? moviesWatched = new List<Movie>();
 
 }
