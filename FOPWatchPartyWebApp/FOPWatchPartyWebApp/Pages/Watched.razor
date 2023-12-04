@@ -62,7 +62,7 @@ else
                     <td>@movie.Director</td>
                     <td>@movie.Actors</td>
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
-                    <td> 5.0/10</td> @*Insert FOPRating here*@ 
+                    <td>@movie.FopRating/10</td>
                     <td>@movie.Runtime</td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")

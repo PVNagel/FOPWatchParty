@@ -86,6 +86,33 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpPut("movies/{imdbID}/foprating/{foprating}")]
+        public async Task<IActionResult> UpdateFopRating(string imdbID, string foprating)
+        {
+            try
+            {
+                var movie = await RetrieveMovieFromDbOrApi(imdbID);
+
+                if (movie != null)
+                {
+                    movie.FopRating = foprating;
+
+                    _dbContext.Movies.Update(movie);
+                    _dbContext.SaveChanges();
+                    return Ok(movie);
+                }
+                else
+                {
+                    return BadRequest("Invalid IMDb ID or movie not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating FopRating: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpGet("title/{title}")]
         public async Task<ActionResult<Movie>> GetMovieByTitle(string title)
         {

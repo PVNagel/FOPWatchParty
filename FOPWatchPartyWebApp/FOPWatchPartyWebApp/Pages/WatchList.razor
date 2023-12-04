@@ -1,6 +1,6 @@
 ﻿@page "/watchlist"
 
-@using System.Globalization;
+@using System.Globalization
 @inject HttpClient httpClient
 @inject NavigationManager navigation
 
@@ -72,7 +72,7 @@ else
                     </td>
                     <td>
                         <div class="button-container">
-                            <button class="MoveToWatched-button" @onclick="() => MoveToWatched(movie)">Watched</button>
+                            <button class="MoveToWatched-button" @onclick="() => RemoveFromWatchlist(movie)">Watched</button>
                             <button class="RemoveFromWatchlist-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
                         </div>
                     </td>
@@ -102,39 +102,6 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching watchlist: {ex.Message}");
-        }
-    }
-
-    private async Task MoveToWatched(Movie movie)
-    {
-        try
-        {
-            // Add the movie to the watched list
-            var addResponse = await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
-
-            if (addResponse.IsSuccessStatusCode)
-            {
-                // Remove the movie from the watchlist
-                var removeResponse = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
-
-                if (removeResponse.IsSuccessStatusCode)
-                {
-                    moviesToWatch.Remove(movie);
-                    StateHasChanged();
-                }
-                else
-                {
-                    Console.WriteLine($"Error removing movie from the watchlist. Status code: {removeResponse.StatusCode}");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error adding movie to the watched list. Status code: {addResponse.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error moving movie to watched: {ex.Message}");
         }
     }
 
