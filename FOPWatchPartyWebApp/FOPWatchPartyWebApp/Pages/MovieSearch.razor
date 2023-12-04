@@ -1,4 +1,4 @@
-﻿@page "/moviesearch"
+﻿@page "/moviesearch/{movieSearch}"
 @using System.Net;
 @using ClassLibrary.Models;
 
@@ -9,50 +9,52 @@
 <h1 class="search-heading">Search for Movie</h1>
 
 <form class="search-form" @onsubmit="SearchForMovie">
-    <InputText class="search-input" @bind-Value="movieTitle" />
+    <InputText class="search-input" @bind-Value="movieSearch" />
     <button type="submit" class="search-button">Search</button>
 </form>
 
-@if (movies == null)
+@if (movies.Count > 0)
 {
+    <div class="movie-container">
+        @foreach (var movie in movies)
+        {
+            <div class="movie-item">
+                <img src="@movie.Poster" class="movie-poster" @onclick="() => MovieDetails(movie)" />
+                <div class="movie-details">
+                    <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
+                    <div class="movie-year">@movie.Year</div>
+                </div>
+            </div>
+        }
+    </div>
 }
 else
 {
-    @if (movies.Count > 0)
-    {
-        <div class="movie-container">
-            @foreach (var movie in movies)
-            {
-                <div class="movie-item">
-                    <img src="@movie.Poster" class="movie-poster" @onclick="() => MovieDetails(movie)" />
-                    <div class="movie-details">
-                        <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
-                        <div class="movie-year">@movie.Year</div>
-                    </div>
-                    <button class="movie-add-button" @onclick="() => AddMovieToWatchlist(movie)">Add to Watchlist</button>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p class="loading-message">Loading...</p>
-    }
+    <p class="loading-message">Loading...</p>
 }
 
-@code{
-    private string movieTitle = "";
-    private List<Movie>? movies;
+@code {
+    [Parameter]
+    public string movieSearch { get; set; }
+    private List<Movie>? movies = new List<Movie>();
     private Movie? movie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(movieSearch))
+        {
+            await SearchForMovie();
+        }
+    }
 
     private async Task SearchForMovie()
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(movieTitle))
+            if (!string.IsNullOrWhiteSpace(movieSearch))
             {
                 movies = new List<Movie>();
-                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/movies/search/{movieTitle}");
+                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/movies/search/{movieSearch}");
 
                 foreach (Search search in root.Search)
                 {
@@ -65,6 +67,7 @@ else
                         };
                     movies.Add(newMovie);
                 }
+                navigation.NavigateTo($"/moviesearch/{movieSearch}");
             }
         }
         catch (Exception ex)
