@@ -1,12 +1,12 @@
-﻿@page "/watchlist"
+﻿@page "/watched"
 
 @using System.Globalization;
 @inject HttpClient httpClient
 @inject NavigationManager navigation
 
-<h1>Watchlist</h1>
+<h1>Watched</h1>
 
-@if (moviesToWatch == null)
+@if (moviesWatched == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -37,19 +37,23 @@ else
                         <span class="sort-icon">@RenderSortIcon("IMDb")</span>
                     </div>
                 </th>
+                <th @onclick="@(() => SortMoviesBy("FOPrating"))">
+                    <div class="header-content">
+                        FOP
+                        <span class="sort-icon">@RenderSortIcon("FOPrating")</span>
+                    </div>
+                </th>
                 <th @onclick="@(() => SortMoviesBy("Runtime"))">
                     <div class="header-content">
                         Runtime
                         <span class="sort-icon">@RenderSortIcon("Runtime")</span>
                     </div>
                 </th>
-                <th>Awards</th>
-                <th></th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var movie in moviesToWatch)
+            @foreach (var movie in moviesWatched)
             {
                 <tr>
                     <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
@@ -58,8 +62,8 @@ else
                     <td>@movie.Director</td>
                     <td>@movie.Actors</td>
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
+                    <td> 5.0/10</td> @*Insert FOPRating here*@ 
                     <td>@movie.Runtime</td>
-                    <td>@movie.Awards</td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
                         {
@@ -70,21 +74,13 @@ else
                             <img src="@movie.Poster" alt="Movie Poster" width="150" height="250" />
                         }
                     </td>
-                    <td>
-                        <div class="button-container">
-                            <button class="MoveToWatched-button" @onclick="() => MoveToWatched(movie)">Watched</button>
-                            <button class="RemoveFromWatchlist-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
-                        </div>
-                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
-
 @code {
-    private Movie? movie;
-    private List<Movie>? moviesToWatch;
+    private List<Movie>? moviesWatched;
     private string? sortBy;
     private bool sortAsc = false;
 
@@ -92,71 +88,17 @@ else
     {
         try
         {
-            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get");
+            moviesWatched = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watched/get");
 
-            if (moviesToWatch != null && moviesToWatch.Any())
+            // Check if movieList is not null before sorting
+            if (moviesWatched != null && moviesWatched.Any())
             {
-                SortMoviesBy("IMDb");
+                SortMoviesBy("FOPrating");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching watchlist: {ex.Message}");
-        }
-    }
-
-    private async Task MoveToWatched(Movie movie)
-    {
-        try
-        {
-            // Add the movie to the watched list
-            var addResponse = await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
-
-            if (addResponse.IsSuccessStatusCode)
-            {
-                // Remove the movie from the watchlist
-                var removeResponse = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
-
-                if (removeResponse.IsSuccessStatusCode)
-                {
-                    moviesToWatch.Remove(movie);
-                    StateHasChanged();
-                }
-                else
-                {
-                    Console.WriteLine($"Error removing movie from the watchlist. Status code: {removeResponse.StatusCode}");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error adding movie to the watched list. Status code: {addResponse.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error moving movie to watched: {ex.Message}");
-        }
-    }
-
-    private async Task RemoveFromWatchlist(Movie movie)
-    {
-        try
-        {
-            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                moviesToWatch.Remove(movie);
-                StateHasChanged();
-            }
-            else
-            {
-                Console.WriteLine($"Error adding movie to the watchlist. Status code: {response.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error adding movie to the watchlist: {ex.Message}");
         }
     }
 
@@ -178,17 +120,20 @@ else
         switch (attribute)
         {
             case "Title":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderByDescending(m => m.Title).ToList()
-                                        : moviesToWatch.OrderBy(m => m.Title).ToList(); break;
+                moviesWatched = sortAsc ? moviesWatched.OrderByDescending(m => m.Title).ToList()
+                                        : moviesWatched.OrderBy(m => m.Title).ToList(); break;
             case "Released":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => ConvertToDateTime(m.Released)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => ConvertToDateTime(m.Released)).ToList(); break;
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => ConvertToDateTime(m.Released)).ToList()
+                                        : moviesWatched.OrderByDescending(m => ConvertToDateTime(m.Released)).ToList(); break;
             case "IMDb":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
+                                        : moviesWatched.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
+            case "FOPrating":
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
+                                        : moviesWatched.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
             case "Runtime":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
+                                        : moviesWatched.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
         }
         StateHasChanged();
     }

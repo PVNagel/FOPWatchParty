@@ -3,6 +3,7 @@ using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOPMovieAPI.Migrations
 {
     [DbContext(typeof(FOPDbContext))]
-    partial class FOPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231204120022_AddFOPrating")]
+    partial class AddFOPrating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,24 +46,6 @@ namespace FOPMovieAPI.Migrations
                     b.HasIndex("MovieimdbID");
 
                     b.ToTable("Rating");
-                });
-
-            modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("MovieimdbID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MovieimdbID");
-
-                    b.ToTable("WatchedMovies");
                 });
 
             modelBuilder.Entity("ClassLibrary.Models.WatchlistMovie", b =>
@@ -104,7 +89,7 @@ namespace FOPMovieAPI.Migrations
                     b.Property<string>("Director")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FopRating")
+                    b.Property<string>("FOPrating")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Genre")
@@ -168,15 +153,6 @@ namespace FOPMovieAPI.Migrations
                     b.HasOne("Movie", null)
                         .WithMany("Ratings")
                         .HasForeignKey("MovieimdbID");
-                });
-
-            modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>
-                {
-                    b.HasOne("Movie", "Movie")
-                        .WithMany()
-                        .HasForeignKey("MovieimdbID");
-
-                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("ClassLibrary.Models.WatchlistMovie", b =>
