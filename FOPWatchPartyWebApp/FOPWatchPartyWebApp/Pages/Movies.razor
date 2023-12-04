@@ -1,10 +1,18 @@
 ﻿@page "/movies"
 
 @using System.Globalization;
+@using ClassLibrary.Models;
 @inject HttpClient httpClient
 @inject NavigationManager navigation
 
 <h1>Movies</h1>
+
+<h2 class="search-heading">Search for Movie</h2>
+
+<form class="search-form" @onsubmit="@(async () => await Search(movieSearch))">
+    <InputText class="search-input" @bind-Value="movieSearch" />
+    <button type="submit" class="search-button">Search</button>
+</form>
 
 @if (movieList == null)
 {
@@ -72,11 +80,13 @@ else
     </table>
 }
 
-@code{
+@code {
+    private string? movieSearch;
     private Movie? movie;
     private List<Movie>? movieList;
     private string? sortBy;
     private bool sortAsc = false;
+    private bool isSearch = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,7 +118,6 @@ else
         }
 
     }
-
 
     private void SortMoviesBy(string attribute)
     {
@@ -187,9 +196,13 @@ else
         return string.Empty;
     }
 
-
     private void MovieDetails(Movie movie)
     {
         navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+    }
+
+    private async Task Search(string movieSearch)
+    {
+        navigation.NavigateTo($"/moviesearch/{movieSearch}");
     }
 }
