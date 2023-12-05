@@ -72,17 +72,17 @@
     margin-top: 40px;
 }
 
-.watchlist-button {
+.submitReportButton {
     background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
     color: #fff;
     border: none;
-    padding: 16px 32px;
+    padding: 8px 16px;
     border-radius: 8px;
     font-size: 20px;
     cursor: pointer;
     transition: background 0.3s;
 }
 
-    .watchlist-button:hover {
+    .submitReportButton:hover {
         background: linear-gradient(180deg, #003366 0%, #3a0647 70%);
     }
