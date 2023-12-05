@@ -56,42 +56,6 @@ th {
     white-space: normal;
 }
 
-/* Adjust the width of Actors column */
-.table td:nth-child(5),
-.table th:nth-child(5) {
-    max-width: 180px; /* Adjusted maximum width */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
-}
-
-/* Adjust the width of the IMDb column */
-.table td:nth-child(6),
-.table th:nth-child(6) {
-    min-width: 100px; /* Adjusted minimum width */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Adjust the width of the Runtime column */
-.table td:nth-child(7),
-.table th:nth-child(7) {
-    min-width: 100px; /* Adjusted minimum width */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Adjust the width and text wrapping of Awards column cells */
-.table td:nth-child(8),
-.table th:nth-child(8) {
-    max-width: 180px; /* Adjusted maximum width */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
-}
-
 /* Sort icon styles */
 .sort-icon {
     position: absolute;
