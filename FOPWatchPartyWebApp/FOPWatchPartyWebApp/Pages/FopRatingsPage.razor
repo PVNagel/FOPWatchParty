@@ -1,0 +1,156 @@
+﻿@page "/fopratingspage/{imdbID}"
+@using System.Net;
+@using ClassLibrary.Models;
+
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+@inject IJSRuntime JSRuntime
+
+<div class="movie-details-container">
+    @if (movie == null)
+    {
+        <div class="loading-message">
+            <em>Loading...</em>
+        </div>
+    }
+    else
+    {
+        <div class="movie-details">
+            <h1 class="movie-title">@movie.Title</h1>
+            <div class="details-container">
+                <div class="poster-section">
+                    @if (movie.Poster == "N/A")
+                    {
+                        <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" />
+                    }
+                    else
+                    {
+                        <img src="@movie.Poster" alt="Movie Poster" class="movie-poster" />
+                    }
+                </div>
+                <table class="movie-table">
+                    <tbody>
+                        <tr>
+                            <th>FOP Rating:</th>
+                            <td>
+                                <select @bind="fopRating">
+                                    <option value="1.0">1.0</option>
+                                    <option value="1.5">1.5</option>
+                                    <option value="2.0">2.0</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="3.0">3.0</option>
+                                    <option value="3.5">3.5</option>
+                                    <option value="4.0">4.0</option>
+                                    <option value="4.5">4.5</option>
+                                    <option value="5.0">5.0</option>
+                                    <option value="5.5">5.5</option>
+                                    <option value="6.0">6.0</option>
+                                    <option value="6.5">6.5</option>
+                                    <option value="7.0">7.0</option>
+                                    <option value="7.5">7.5</option>
+                                    <option value="8.0">8.0</option>
+                                    <option value="8.5">8.5</option>
+                                    <option value="9.0">9.0</option>
+                                    <option value="9.5">9.5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>One Oscar:</th>
+                            <td>
+                                <select @bind="oneOscar">
+                                    <option>Director: @movie.Director</option>
+                                    <option>Writer(s): @movie.Writer</option>
+                                    @foreach (var actor in movie.Actors.Split(','))
+                                    {
+                                        <option>Actor: @actor.Trim()</option>
+                                    }
+                                    <option>Visual effects team</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Best quote:</th>
+                            <td><input type="text" @bind="bestQuote" /></td>
+                        </tr>
+                        <tr>
+                            <th>Funniest quote:</th>
+                            <td><input type="text" @bind="funniestQuote" /></td>
+                        </tr>
+                        <tr>
+                            <th>Could this be remade as a 10 episode Netflix series:</th>
+                            <td>
+                                <select @bind="remakeOption">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button class="submitFormButton" @onclick="SubmitForm">Submit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter]
+    public string imdbID { get; set; }
+    private Movie movie;
+    UpdateMovieRequest updateData = new UpdateMovieRequest();
+
+    string? fopRating { get; set; }
+    string? oneOscar { get; set; }
+    string? bestQuote { get; set; }
+    string? funniestQuote { get; set; }
+    string? remakeOption { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/{imdbID}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+        }
+    }
+
+    private async Task SubmitForm()
+    {
+        try
+        {
+            updateData.FopRating = fopRating;
+            updateData.OneOscar = oneOscar;
+            updateData.BestQuote = bestQuote;
+            updateData.FunniestQuote = funniestQuote;
+            updateData.CanRemakeAsNetflixSeries = remakeOption;
+
+            var response = await httpClient.PutAsJsonAsync($"https://localhost:7055/api/movies/update/{movie.imdbID}", updateData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
+                await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
+                await JSRuntime.InvokeVoidAsync("alert", "Form submitted successfully!");
+                navigation.NavigateTo($"/watched");
+            }
+
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error submitting form. Please try again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting form: {ex.Message}");
+        }
+    }
+}

@@ -1,62 +1,60 @@
-﻿@page "/moviesearch"
+﻿@page "/moviesearch/{movieSearch}"
+@using System.Net;
 @using ClassLibrary.Models;
-@using System.Text.Json;
-@using System.Text;
-@inject IJSRuntime JSRuntime
+
 @inject HttpClient httpClient
-@inject NavigationManager Navigation
+@inject NavigationManager navigation
+@inject IJSRuntime JSRuntime
 
-<link rel="stylesheet" href="/css/movieSearch.css" />
+<h1 class="search-heading">Search for Movie</h1>
 
-<PageTitle>Search for Movie</PageTitle>
-
-<h1>Search for Movie</h1>
-
-<form @onsubmit="SearchForMovie">
-    <InputText @bind-Value="movieTitle" />
+<form class="search-form" @onsubmit="SearchForMovie">
+    <InputText class="search-input" @bind-Value="movieSearch" />
+    <button type="submit" class="search-button">Search</button>
 </form>
 
-@if (movies == null)
+@if (movies.Count > 0)
 {
+    <div class="movie-container">
+        @foreach (var movie in movies)
+        {
+            <div class="movie-item">
+                <img src="@movie.Poster" class="movie-poster" @onclick="() => MovieDetails(movie)" />
+                <div class="movie-details">
+                    <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
+                    <div class="movie-year">@movie.Year</div>
+                </div>
+            </div>
+        }
+    </div>
 }
 else
 {
-    @if (movies.Count > 0)
-    {
-        <div class="movie-container">
-            @foreach (var movie in movies)
-            {
-                <div class="movie-item">
-                    <img src="@movie.Poster" @onclick="() => MovieDetails(movie)" />
-                    <div class="movie-details">
-                        <div class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</div>
-                        <div class="movie-year">@movie.Year</div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p>Loading...</p>
-    }
+    <p class="loading-message">Loading...</p>
 }
 
-
-
 @code {
-    private string movieTitle = "";
-    private List<Movie>? movies;
+    [Parameter]
+    public string movieSearch { get; set; }
+    private List<Movie>? movies = new List<Movie>();
     private Movie? movie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(movieSearch))
+        {
+            await SearchForMovie();
+        }
+    }
 
     private async Task SearchForMovie()
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(movieTitle))
+            if (!string.IsNullOrWhiteSpace(movieSearch))
             {
                 movies = new List<Movie>();
-                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/Movies/GetMoviesBySearch?title={movieTitle}");
+                Root root = await httpClient.GetFromJsonAsync<Root>($"https://localhost:7055/api/movies/search/{movieSearch}");
 
                 foreach (Search search in root.Search)
                 {
@@ -69,6 +67,7 @@ else
                         };
                     movies.Add(newMovie);
                 }
+                navigation.NavigateTo($"/moviesearch/{movieSearch}");
             }
         }
         catch (Exception ex)
@@ -83,11 +82,15 @@ else
         {
             if (movie != null)
             {
-                var response = await httpClient.PostAsync($"https://localhost:7055/api/WatchList/AddToWatchList?imdbID={movie.imdbID}", null);
+                var response = await httpClient.PostAsync($"https://localhost:7055/api/watchlist/add?imdbID={movie.imdbID}", null);
 
                 if (response.IsSuccessStatusCode)
                 {
                     await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie has been added to the watchlist");
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Movie is already in the watchlist");
                 }
                 else
                 {
@@ -103,7 +106,7 @@ else
 
     private void MovieDetails(Movie movie)
     {
-        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+        navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }
 

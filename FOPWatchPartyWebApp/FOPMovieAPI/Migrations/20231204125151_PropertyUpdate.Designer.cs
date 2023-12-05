@@ -3,6 +3,7 @@ using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOPMovieAPI.Migrations
 {
     [DbContext(typeof(FOPDbContext))]
-    partial class FOPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231204125151_PropertyUpdate")]
+    partial class PropertyUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -92,13 +95,7 @@ namespace FOPMovieAPI.Migrations
                     b.Property<string>("Awards")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BestQuote")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("BoxOffice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CanRemakeAsNetflixSeries")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
@@ -113,9 +110,6 @@ namespace FOPMovieAPI.Migrations
                     b.Property<string>("FopRating")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FunniestQuote")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Genre")
                         .HasColumnType("nvarchar(max)");
 
@@ -123,9 +117,6 @@ namespace FOPMovieAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Metascore")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OneOscar")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Plot")

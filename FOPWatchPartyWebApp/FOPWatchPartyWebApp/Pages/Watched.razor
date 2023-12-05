@@ -1,0 +1,149 @@
+﻿@page "/watched"
+
+@using System.Globalization;
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+
+<h1>Watched</h1>
+
+@if (moviesWatched == null)
+{
+    <p><em>Loading...</em></p>
+}
+
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortMoviesBy("Title"))">
+                    <div class="header-content">
+                        Title
+                        <span class="sort-icon">@RenderSortIcon("Title")</span>
+                    </div>
+                </th>
+                <th>One Oscar</th>
+                <th>Best Quote</th>
+                <th>Funniest Quote</th>
+                <th>Remake as Netflix series</th>
+                <th @onclick="@(() => SortMoviesBy("imdbRating"))">
+                    <div class="header-content">
+                        IMDb
+                        <span class="sort-icon">@RenderSortIcon("imdbRating")</span>
+                    </div>
+                </th>
+                <th @onclick="@(() => SortMoviesBy("FOPrating"))">
+                    <div class="header-content">
+                        FOP
+                        <span class="sort-icon">@RenderSortIcon("FOPrating")</span>
+                    </div>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in moviesWatched)
+            {
+                <tr>
+                    <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
+                    <td>@movie.OneOscar</td>
+                    <td>@movie.BestQuote</td>
+                    <td>@movie.FunniestQuote</td>
+                    <td>@movie.CanRemakeAsNetflixSeries</td>
+                    <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
+                    <td>@movie.FopRating/10</td>
+                    <td @onclick="() => MovieDetails(movie)">
+                        @if (movie.Poster == "N/A")
+                        {
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="150" height="250" />
+                        }
+                        else
+                        {
+                            <img src="@movie.Poster" alt="Movie Poster" width="150" height="250" />
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<Movie>? moviesWatched;
+    private string? sortBy;
+    private bool sortAsc = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            moviesWatched = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watched/get");
+
+            // Check if movieList is not null before sorting
+            if (moviesWatched != null && moviesWatched.Any())
+            {
+                SortMoviesBy("FOPrating");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching watchlist: {ex.Message}");
+        }
+    }
+
+    private void SortMoviesBy(string attribute)
+    {
+        if (sortBy == attribute)
+        {
+            // Toggle sorting order if the same attribute is clicked again
+            sortAsc = !sortAsc;
+        }
+        else
+        {
+            // Change sorting attribute and set ascending order by default
+            sortBy = attribute;
+            sortAsc = false;
+        }
+
+        // Perform sorting based on the selected attribute
+        switch (attribute)
+        {
+            case "Title":
+                moviesWatched = sortAsc ? moviesWatched.OrderByDescending(m => m.Title).ToList()
+                                        : moviesWatched.OrderBy(m => m.Title).ToList();
+                break;
+            case "imdbRating": // Change the case to "imdbRating"
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
+                                        : moviesWatched.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList();
+                break;
+            case "FOPrating": // Change the case to "FopRating"
+                moviesWatched = sortAsc ? moviesWatched.OrderBy(m => RatingNotAvailableCheck(m.FopRating)).ToList()
+                                        : moviesWatched.OrderByDescending(m => RatingNotAvailableCheck(m.FopRating)).ToList();
+                break;
+        }
+        StateHasChanged();
+    }
+
+    private string RatingNotAvailableCheck(string imdbRating)
+    {
+        // Treat "N/A" as the lowest value
+        if (imdbRating == "N/A")
+        {
+            return "0.0";
+        }
+        return imdbRating;
+    }
+
+    private string RenderSortIcon(string column)
+    {
+        if (sortBy == column)
+        {
+            return sortAsc ? "🔼" : "🔽"; // Up arrow for ascending, down arrow for descending
+        }
+        return string.Empty;
+    }
+
+    private void MovieDetails(Movie movie)
+    {
+        navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+    }
+}

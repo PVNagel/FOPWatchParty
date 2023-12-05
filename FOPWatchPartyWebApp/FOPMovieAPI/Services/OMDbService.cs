@@ -13,24 +13,21 @@ namespace FOPMovieAPI.Services
             _httpClient = httpClient;
         }
 
-        public async Task<Movie> GetMovieByIdDataAsync(string imdbID)
+        public async Task<Movie> GetMovieByIdAsync(string imdbID)
         {
-            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&i={imdbID}";
-            var response = await _httpClient.GetStringAsync(apiUrl);
+            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&i={imdbID}");
             return JsonSerializer.Deserialize<Movie>(response);
         }
 
-        public async Task<Movie> GetMovieByTitleDataAsync(string title)
+        public async Task<Movie> GetMovieByTitleAsync(string title)
         {
-            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&t={title}";
-            var response = await _httpClient.GetStringAsync(apiUrl);
+            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&t={title}");
             return JsonSerializer.Deserialize<Movie>(response);
         }
 
-        public async Task<Root> GetMoviesBySearchDataAsync(string title)
+        public async Task<Root> SearchMoviesAsync(string title)
         {
-            string apiUrl = $"https://www.omdbapi.com/?apikey=aaf8907d&s={title}&page=1";
-            var response = await _httpClient.GetStringAsync(apiUrl);
+            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&s={title}&page=1");
             return JsonSerializer.Deserialize<Root>(response);
         }
     }

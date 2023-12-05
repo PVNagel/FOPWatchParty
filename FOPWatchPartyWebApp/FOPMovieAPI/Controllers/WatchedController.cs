@@ -3,19 +3,18 @@ using FOPMovieAPI.Data;
 using FOPMovieAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace FOPMovieAPI.Controllers
 {
     [ApiController]
-    [Route("api/watchlist")]
-    public class WatchlistController : Controller
+    [Route("api/watched")]
+    public class WatchedController : Controller
     {
         private readonly ILogger<WatchlistController> _logger;
         private readonly FOPDbContext _dbContext;
         private readonly IOMDbService _omdbService;
 
-        public WatchlistController(ILogger<WatchlistController> logger, FOPDbContext dbContext, IOMDbService omdbService)
+        public WatchedController(ILogger<WatchlistController> logger, FOPDbContext dbContext, IOMDbService omdbService)
         {
             _logger = logger;
             _dbContext = dbContext;
@@ -23,26 +22,25 @@ namespace FOPMovieAPI.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetWatchlist()
+        public async Task<IActionResult> GetWatchedMovies()
         {
             try
             {
-                List<Movie> watchlist = new List<Movie>();
-                var tempWatchlist = await _dbContext.Watchlist.Include(w => w.Movie).ToListAsync();
-                foreach (var item in tempWatchlist)
+                List<Movie> watchedMovies = new List<Movie>();
+                var tempWatched = await _dbContext.WatchedMovies.Include(w => w.Movie).ToListAsync();
+                foreach (var item in tempWatched)
                 {
                     var movie = item.Movie;
-                    watchlist.Add(movie);
+                    watchedMovies.Add(movie);
                 }
-                return Ok(watchlist);
+                return Ok(watchedMovies);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting watchlist: {ex.Message}");
+                _logger.LogError($"Error getting watched list: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }
-
 
         [HttpPost("add")]
         public async Task<IActionResult> AddToWatchlist(string imdbID)
@@ -51,61 +49,36 @@ namespace FOPMovieAPI.Controllers
             {
                 var movie = await RetrieveMovieFromDbOrApi(imdbID);
 
-                if(movie == null)
+                if (movie == null)
                 {
                     return BadRequest("Invalid IMDb ID or movie not found");
                 }
 
-                var isMovieInWatchlist = _dbContext.Watchlist.Any(w => w.Movie.imdbID == imdbID);
+                var hasBeenWatched = _dbContext.WatchedMovies.Any(w => w.Movie.imdbID == imdbID);
 
-                if (!isMovieInWatchlist)
+                if (!hasBeenWatched)
                 {
-                    var watchlistMovie = new WatchlistMovie { Movie = movie ?? _dbContext.Movies.First(m => m.imdbID == imdbID) };
-                    _dbContext.Watchlist.Add(watchlistMovie);
+                    var watchedMovie = new WatchedMovie { Movie = movie ?? _dbContext.Movies.First(m => m.imdbID == imdbID) };
+                    _dbContext.WatchedMovies.Add(watchedMovie);
                     _dbContext.SaveChanges();
 
-                    return Ok("Movie added to the watchlist");
+                    return Ok("Movie added to the watched list");
                 }
                 else
                 {
-                    return Conflict("Movie is already in the watchlist");
+                    return Conflict("Movie is already in the watched list");
                 }
             }
 
             catch (Exception ex)
             {
-                _logger.LogError($"Error adding movie to the watchlist: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-
-        [HttpDelete("remove")]
-        public IActionResult RemoveFromWatchlist(string imdbID)
-        {
-            try
-            {
-                var watchlistMovieToRemove = _dbContext.Watchlist.FirstOrDefault(w => w.Movie.imdbID == imdbID);
-                if (watchlistMovieToRemove != null)
-                {
-                    _dbContext.Watchlist.Remove(watchlistMovieToRemove);
-                    _dbContext.SaveChanges();
-                    return Ok("Movie removed from watchlist");
-                }
-                else
-                {
-                    return NotFound("Movie not found in watchlist");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error adding movie to the watchlist: {ex.Message}");
+                _logger.LogError($"Error adding movie to the watched list: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }
 
         private async Task<Movie> RetrieveMovieFromDbOrApi(string imdbID)
         {
-
             // Check if the movie already exists in the local database
             var existingMovie = _dbContext.Movies.FirstOrDefault(m => m.imdbID == imdbID);
 

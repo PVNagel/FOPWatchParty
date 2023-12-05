@@ -22,7 +22,12 @@ public class Movie
     public string? imdbRating { get; set; }
     public string? imdbVotes { get; set; }
     [Key]
-    public string imdbID { get; set; }
+    public string? imdbID { get; set; }
+    public string? FopRating { get; set; }
+    public string? OneOscar { get; set; }
+    public string? BestQuote { get; set; }
+    public string? FunniestQuote { get; set; }
+    public string? CanRemakeAsNetflixSeries { get; set; }
     public string? Type { get; set; }
     public string? DVD { get; set; }
     public string? BoxOffice { get; set; }

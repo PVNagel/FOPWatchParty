@@ -1,8 +1,7 @@
 ﻿h1 {
     color: #333;
+    font-weight: bold;
     text-align: center;
-    margin-top: 30px;
-    margin-bottom: 30px;
 }
 
 form {
@@ -23,14 +22,15 @@ form {
 }
 
 .search-button {
-    background-color: #007bff;
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
     color: #fff;
     border: none;
-    padding: 10px 20px;
+    padding: 5px 10px;
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    margin-bottom: 12px;
+    transition: background 0.3s;
 }
 
     .search-button:hover {
@@ -81,17 +81,3 @@ form {
     color: #888;
     margin-top: 5px;
 }
-
-.movie-details-button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-    .movie-details-button:hover {
-        background-color: #0056b3;
-    }

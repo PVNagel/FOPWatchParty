@@ -3,6 +3,7 @@ using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOPMovieAPI.Migrations
 {
     [DbContext(typeof(FOPDbContext))]
-    partial class FOPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231204121842_AddWatchedlist")]
+    partial class AddWatchedlist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,24 +48,6 @@ namespace FOPMovieAPI.Migrations
                     b.ToTable("Rating");
                 });
 
-            modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("MovieimdbID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MovieimdbID");
-
-                    b.ToTable("WatchedMovies");
-                });
-
             modelBuilder.Entity("ClassLibrary.Models.WatchlistMovie", b =>
                 {
                     b.Property<int>("Id")
@@ -92,13 +77,7 @@ namespace FOPMovieAPI.Migrations
                     b.Property<string>("Awards")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BestQuote")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("BoxOffice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CanRemakeAsNetflixSeries")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
@@ -110,10 +89,7 @@ namespace FOPMovieAPI.Migrations
                     b.Property<string>("Director")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FopRating")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FunniestQuote")
+                    b.Property<string>("FOPrating")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Genre")
@@ -123,9 +99,6 @@ namespace FOPMovieAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Metascore")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OneOscar")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Plot")
@@ -180,15 +153,6 @@ namespace FOPMovieAPI.Migrations
                     b.HasOne("Movie", null)
                         .WithMany("Ratings")
                         .HasForeignKey("MovieimdbID");
-                });
-
-            modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>
-                {
-                    b.HasOne("Movie", "Movie")
-                        .WithMany()
-                        .HasForeignKey("MovieimdbID");
-
-                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("ClassLibrary.Models.WatchlistMovie", b =>

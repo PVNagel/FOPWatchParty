@@ -1,73 +1,103 @@
 ﻿@page "/watchlist"
-@using ClassLibrary.Models;
+
+@using System.Globalization
 @inject HttpClient httpClient
-@inject NavigationManager Navigation
+@inject NavigationManager navigation
 
-<link rel="stylesheet" href="/css/watchList.css" />
-
-<h1>Watch List</h1>
+<h1>Watchlist</h1>
 
 @if (moviesToWatch == null)
 {
-    <p><em>The movie watchlist is currently empty!</em></p>
+    <p><em>Loading...</em></p>
 }
+
 else
 {
-    @if (moviesToWatch.Count == 0)
-    {
-        <p>Loading...</p>
-    }
-
-    @if (moviesToWatch.Count > 0)
-    {
-        <table class="table">
-            <thead>
+    <table class="table">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortMoviesBy("Title"))">
+                    <div class="header-content">
+                        Title
+                        <span class="sort-icon">@RenderSortIcon("Title")</span>
+                    </div>
+                </th>
+                <th @onclick="@(() => SortMoviesBy("Released"))">
+                    <div class="header-content">
+                        Released
+                        <span class="sort-icon">@RenderSortIcon("Released")</span>
+                    </div>
+                </th>
+                <th>Genre</th>
+                <th>Director</th>
+                <th>Actors</th>
+                <th @onclick="@(() => SortMoviesBy("IMDb"))">
+                    <div class="header-content">
+                        IMDb
+                        <span class="sort-icon">@RenderSortIcon("IMDb")</span>
+                    </div>
+                </th>
+                <th @onclick="@(() => SortMoviesBy("Runtime"))">
+                    <div class="header-content">
+                        Runtime
+                        <span class="sort-icon">@RenderSortIcon("Runtime")</span>
+                    </div>
+                </th>
+                <th>Awards</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in moviesToWatch)
+            {
                 <tr>
-                    <th>Title</th>
-                    <th></th>
-                    <th>Year</th>
-                    <th>Director</th>
-                    <th>Actors</th>
-                    <th>IMDb rating</th>
-                    <th>Awards</th>
+                    <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
+                    <td>@movie.Released</td>
+                    <td>@movie.Genre</td>
+                    <td>@movie.Director</td>
+                    <td>@movie.Actors</td>
+                    <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
+                    <td>@movie.Runtime</td>
+                    <td>@movie.Awards</td>
+                    <td @onclick="() => MovieDetails(movie)">
+                        @if (movie.Poster == "N/A")
+                        {
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="150" height="250" />
+                        }
+                        else
+                        {
+                            <img src="@movie.Poster" alt="Movie Poster" width="150" height="250" />
+                        }
+                    </td>
+                    <td>
+                        <div class="button-container">
+                            <button class="MoveToWatched-button" @onclick="() => GoToRatingsPage(movie)">Watched</button>
+                            <button class="RemoveFromWatchlist-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
+                        </div>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in moviesToWatch)
-                {
-                    <tr>
-                        <td class="movie-link" @onclick="() => MovieDetails(movie)">
-                            <strong style="font-size: 18px;">@movie.Title</strong>
-                        </td>
-                        <td><img src="@movie.Poster" alt="Movie Poster" width="100" height="150" /></td>
-                        <td>@movie.Year</td>
-                        <td>@movie.Director</td>
-                        <td>@movie.Actors</td>
-                        <td>@movie.imdbRating / 10<br/>(@movie.imdbVotes)</td>
-                        <td>@movie.Awards</td>
-                        <td>
-                            <div class="button-container">
-                                <button class="action-button" @onclick="() => MarkAsWatched(movie)">Watched</button>
-                                <button class="action-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-
-        </table>
-    }
+            }
+        </tbody>
+    </table>
 }
 
 @code {
     private Movie? movie;
-    private List<Movie>? moviesToWatch = new List<Movie>();
+    private List<Movie>? moviesToWatch;
+    private string? sortBy;
+    private bool sortAsc = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/WatchList/GetAllFromWatchList");
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get");
+
+            if (moviesToWatch != null && moviesToWatch.Any())
+            {
+                SortMoviesBy("IMDb");
+            }
         }
         catch (Exception ex)
         {
@@ -75,16 +105,16 @@ else
         }
     }
 
-    private void MarkAsWatched(Movie movie)
+    private async Task GoToRatingsPage(Movie movie)
     {
-        // Implement logic to remove the movie from the watch list and add to watched list
+        navigation.NavigateTo($"/fopratingspage/{movie.imdbID}");
     }
 
     private async Task RemoveFromWatchlist(Movie movie)
     {
         try
         {
-            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/WatchList/DeleteFromWatchList?imdbID={movie.imdbID}");
+            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -102,8 +132,80 @@ else
         }
     }
 
+    private void SortMoviesBy(string attribute)
+    {
+        if (sortBy == attribute)
+        {
+            // Toggle sorting order if the same attribute is clicked again
+            sortAsc = !sortAsc;
+        }
+        else
+        {
+            // Change sorting attribute and set ascending order by default
+            sortBy = attribute;
+            sortAsc = false;
+        }
+
+        // Perform sorting based on the selected attribute
+        switch (attribute)
+        {
+            case "Title":
+                moviesToWatch = sortAsc ? moviesToWatch.OrderByDescending(m => m.Title).ToList()
+                                        : moviesToWatch.OrderBy(m => m.Title).ToList(); break;
+            case "Released":
+                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => ConvertToDateTime(m.Released)).ToList()
+                                        : moviesToWatch.OrderByDescending(m => ConvertToDateTime(m.Released)).ToList(); break;
+            case "IMDb":
+                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
+                                        : moviesToWatch.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
+            case "Runtime":
+                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
+                                        : moviesToWatch.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
+        }
+        StateHasChanged();
+    }
+
+    private string RatingNotAvailableCheck(string imdbRating)
+    {
+        // Treat "N/A" as the lowest value
+        if (imdbRating == "N/A")
+        {
+            return "0.0";
+        }
+        return imdbRating;
+    }
+
+    private DateTime ConvertToDateTime(string dateString)
+    {
+        if (DateTime.TryParseExact(dateString, "dd MMM yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+        {
+            return result;
+        }
+        // Return DateTime.MinValue if parsing fails
+        return DateTime.MinValue;
+    }
+
+    private int GetRuntimeInMinutes(string runtime)
+    {
+        // Extract the numerical part of the runtime string and convert it to an integer
+        if (int.TryParse(new string(runtime.Where(char.IsDigit).ToArray()), out int minutes))
+        {
+            return minutes;
+        }
+        return 0; // Return 0 if parsing fails
+    }
+
+    private string RenderSortIcon(string column)
+    {
+        if (sortBy == column)
+        {
+            return sortAsc ? "🔼" : "🔽"; // Up arrow for ascending, down arrow for descending
+        }
+        return string.Empty;
+    }
+
     private void MovieDetails(Movie movie)
     {
-        Navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+        navigation.NavigateTo($"/moviepage/{movie.imdbID}");
     }
 }
