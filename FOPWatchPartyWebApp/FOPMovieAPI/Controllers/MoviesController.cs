@@ -26,16 +26,39 @@ namespace FOPMovieAPI.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllMovies()
+        public async Task<IActionResult> GetAllMovies([FromQuery(Name = "year")] string year = null,[FromQuery(Name = "genre")] string genre = null,[FromQuery(Name = "actor")] string actor = null,[FromQuery(Name = "director")] string director = null)
         {
             try
             {
-                var allMovies = _dbContext.Movies.ToList();
-                return Ok(allMovies);
+                IQueryable<Movie> query = _dbContext.Movies;
+
+                // Apply filters if provided
+                if (!string.IsNullOrEmpty(year))
+                {
+                    query = query.Where(m => m.Year == year);
+                }
+
+                if (!string.IsNullOrEmpty(genre))
+                {
+                    query = query.Where(m => m.Genre.Contains(genre));
+                }
+
+                if (!string.IsNullOrEmpty(actor))
+                {
+                    query = query.Where(m => m.Actors.Contains(actor));
+                }
+
+                if (!string.IsNullOrEmpty(director))
+                {
+                    query = query.Where(m => m.Director == director);
+                }
+
+                var filteredMovies = await query.ToListAsync();
+                return Ok(filteredMovies);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting all movies from the database: {ex.Message}");
+                _logger.LogError($"Error getting movies from the database: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }

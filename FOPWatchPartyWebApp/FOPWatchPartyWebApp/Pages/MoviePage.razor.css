@@ -1,12 +1,19 @@
 ﻿/* Movie Page styles */
+.movie-container {
+    display: flex;
+    flex-wrap: wrap;
+}
 
 .movie-details-container {
     max-width: 1200px;
-    margin: 50px auto;
+    margin: 10px auto;
     padding: 40px;
     background-color: #fff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     border-radius: 16px;
+}
+
+.movie-top-info {
 }
 
 .loading-message {
@@ -21,22 +28,25 @@
 }
 
 .movie-title {
-    font-size: 64px;
+    padding: 10px;
+    text-align: center;
+    font-size: 40px;
     color: #333;
     font-weight: bold;
-    margin-bottom: 20px;
 }
 
 .details-container {
     display: flex;
-    margin-top: 40px;
 }
 
-/* Updated Movie Page styles */
 .poster-section {
-    margin-right: 40px;
-    display: flex;
-    align-items: center;
+    max-width: 300px; /* Set a maximum width for the poster section */
+    margin-right: 40px; /* Add margin to the right of the poster-section */
+}
+
+.plot-section {
+    margin-top: 40px; /* Add margin to the right of the poster-section */
+    max-width: 600px; /* Set a maximum width for the plot section */
 }
 
 .movie-poster,
@@ -54,23 +64,23 @@
 }
 
 .movie-table {
+    height: 50px;
     width: 100%;
     border-collapse: collapse;
-    margin-top: 40px;
 }
 
     .movie-table th,
     .movie-table td {
-        padding: 20px;
         font-size: 18px;
         text-align: left;
         border-bottom: 1px solid #ddd;
+        padding: 10px; /* Adjust the padding to your desired value */
     }
 
 .button-container {
     display: flex;
     justify-content: center;
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
 .watchlist-button {

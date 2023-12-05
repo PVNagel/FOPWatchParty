@@ -16,7 +16,35 @@ body {
 h1 {
     color: #333;
     font-weight: bold;
+    font-size: 36px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Increase the bottom margin for spacing */
+    border-bottom: 1px solid #3a0647; /* Add a border line under the title for emphasis */
+    padding-bottom: 10px; /* Adjust the padding for space between the title and border */
 }
+
+h2 {
+    color: #333;
+    font-weight: bold;
+    font-size: 20px; /* Adjust the font size as needed */
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .filter-form label {
+        flex: 1;
+        margin-bottom: 5px;
+    }
+
+    .filter-form select,
+    .filter-form input {
+        flex: 2;
+        padding: 8px;
+        box-sizing: border-box;
+    }
 
 /* Table styles */
 .table {
@@ -56,6 +84,24 @@ th {
     white-space: normal;
 }
 
+/* Adjust the width of Genre column */
+.table td:nth-child(3),
+.table th:nth-child(3) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Directors column */
+.table td:nth-child(4),
+.table th:nth-child(4) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
 /* Adjust the width of Actors column */
 .table td:nth-child(5),
 .table th:nth-child(5) {
@@ -83,9 +129,18 @@ th {
     white-space: nowrap;
 }
 
-/* Adjust the width and text wrapping of Awards column cells */
+/* Adjust the width of the Box office column */
 .table td:nth-child(8),
 .table th:nth-child(8) {
+    min-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width and text wrapping of Awards column cells */
+.table td:nth-child(9),
+.table th:nth-child(9) {
     max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -142,5 +197,35 @@ th {
 }
 
     .search-button:hover {
+        background-color: #0056b3;
+    }
+
+.filter-button {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .filter-button:hover {
+        background-color: #0056b3;
+    }
+
+.clear-filter-button {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .clear-filter-button:hover {
         background-color: #0056b3;
     }

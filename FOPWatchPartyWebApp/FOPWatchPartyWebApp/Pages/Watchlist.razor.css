@@ -16,6 +16,16 @@ body {
 h1 {
     color: #333;
     font-weight: bold;
+    font-size: 36px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Increase the bottom margin for spacing */
+    border-bottom: 1px solid #3a0647; /* Add a border line under the title for emphasis */
+    padding-bottom: 10px; /* Adjust the padding for space between the title and border */
+}
+
+h2 {
+    color: #333;
+    font-weight: bold;
+    font-size: 20px; /* Adjust the font size as needed */
 }
 
 /* Table styles */
@@ -47,10 +57,28 @@ th {
     }
 
 /* Adjust the width of the Title column */
-.table td:nth-child(1), /* Assuming the Title column is the first column, adjust the index accordingly */
+.table td:nth-child(1),
 .table th:nth-child(1) {
-    width: 200px; /* Set the desired width for the Title column */
-    max-width: 200px; /* Set the maximum width for flexibility */
+    width: 200px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Genre column */
+.table td:nth-child(3),
+.table th:nth-child(3) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Directors column */
+.table td:nth-child(4),
+.table th:nth-child(4) {
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
@@ -59,7 +87,7 @@ th {
 /* Adjust the width of Actors column */
 .table td:nth-child(5),
 .table th:nth-child(5) {
-    max-width: 180px; /* Adjusted maximum width */
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
@@ -68,7 +96,7 @@ th {
 /* Adjust the width of the IMDb column */
 .table td:nth-child(6),
 .table th:nth-child(6) {
-    min-width: 100px; /* Adjusted minimum width */
+    min-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -77,16 +105,25 @@ th {
 /* Adjust the width of the Runtime column */
 .table td:nth-child(7),
 .table th:nth-child(7) {
-    min-width: 100px; /* Adjusted minimum width */
+    min-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width of the Box office column */
+.table td:nth-child(8),
+.table th:nth-child(8) {
+    min-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 /* Adjust the width and text wrapping of Awards column cells */
-.table td:nth-child(8),
-.table th:nth-child(8) {
-    max-width: 180px; /* Adjusted maximum width */
+.table td:nth-child(9),
+.table th:nth-child(9) {
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
@@ -129,6 +166,24 @@ th {
     white-space: normal; /* Allow text to wrap onto the next line */
 }
 
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .filter-form label {
+        flex: 1;
+        margin-bottom: 5px;
+    }
+
+    .filter-form select,
+    .filter-form input {
+        flex: 2;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
 /* Button container styles */
 .button-container {
     display: flex;
@@ -158,3 +213,33 @@ th {
         .button-container button:hover {
             background: linear-gradient(180deg, #003366 0%, #3a0647 70%);
         }
+
+.filter-button {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .filter-button:hover {
+        background-color: #0056b3;
+    }
+
+.clear-filter-button {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .clear-filter-button:hover {
+        background-color: #0056b3;
+    }

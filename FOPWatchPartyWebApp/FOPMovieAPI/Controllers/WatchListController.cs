@@ -23,17 +23,38 @@ namespace FOPMovieAPI.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetWatchlist()
+        public async Task<IActionResult> GetWatchlist([FromQuery] string year = null, [FromQuery] string genre = null, [FromQuery] string actor = null, [FromQuery] string director = null)
         {
             try
             {
-                List<Movie> watchlist = new List<Movie>();
+                // Get the initial watchlist with related movies
                 var tempWatchlist = await _dbContext.Watchlist.Include(w => w.Movie).ToListAsync();
-                foreach (var item in tempWatchlist)
+
+                // Apply filters
+                var filteredWatchlist = tempWatchlist.Select(w => w.Movie);
+
+                if (!string.IsNullOrEmpty(year))
                 {
-                    var movie = item.Movie;
-                    watchlist.Add(movie);
+                    filteredWatchlist = filteredWatchlist.Where(m => m.Year == year);
                 }
+
+                if (!string.IsNullOrEmpty(genre))
+                {
+                    filteredWatchlist = filteredWatchlist.Where(m => m.Genre.Contains(genre));
+                }
+
+                if (!string.IsNullOrEmpty(actor))
+                {
+                    filteredWatchlist = filteredWatchlist.Where(m => m.Actors.Contains(actor));
+                }
+
+                if (!string.IsNullOrEmpty(director))
+                {
+                    filteredWatchlist = filteredWatchlist.Where(m => m.Director == director);
+                }
+
+                var watchlist = filteredWatchlist.ToList();
+
                 return Ok(watchlist);
             }
             catch (Exception ex)
@@ -42,7 +63,6 @@ namespace FOPMovieAPI.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
-
 
         [HttpPost("add")]
         public async Task<IActionResult> AddToWatchlist(string imdbID)
