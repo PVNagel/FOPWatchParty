@@ -86,8 +86,8 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
-        [HttpPut("movies/{imdbID}/foprating/{foprating}")]
-        public async Task<IActionResult> UpdateFopRating(string imdbID, string foprating)
+        [HttpPut("update/{imdbID}")]
+        public async Task<IActionResult> UpdateFopRating(string imdbID, [FromBody] UpdateMovieRequest request)
         {
             try
             {
@@ -95,10 +95,15 @@ namespace FOPMovieAPI.Controllers
 
                 if (movie != null)
                 {
-                    movie.FopRating = foprating;
+                    movie.FopRating = request.FopRating;
+                    movie.OneOscar = request.OneOscar;
+                    movie.BestQuote = request.BestQuote;
+                    movie.FunniestQuote = request.FunniestQuote;
+                    movie.CanRemakeAsNetflixSeries = request.CanRemakeAsNetflixSeries;
 
                     _dbContext.Movies.Update(movie);
                     _dbContext.SaveChanges();
+
                     return Ok(movie);
                 }
                 else
@@ -108,7 +113,7 @@ namespace FOPMovieAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error updating FopRating: {ex.Message}");
+                _logger.LogError($"Error updating movie: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }

@@ -72,7 +72,7 @@ else
                     </td>
                     <td>
                         <div class="button-container">
-                            <button class="MoveToWatched-button" @onclick="() => RemoveFromWatchlist(movie)">Watched</button>
+                            <button class="MoveToWatched-button" @onclick="() => GoToRatingsPage(movie)">Watched</button>
                             <button class="RemoveFromWatchlist-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
                         </div>
                     </td>
@@ -103,6 +103,11 @@ else
         {
             Console.WriteLine($"Error fetching watchlist: {ex.Message}");
         }
+    }
+
+    private async Task GoToRatingsPage(Movie movie)
+    {
+        navigation.NavigateTo($"/fopratingspage/{movie.imdbID}");
     }
 
     private async Task RemoveFromWatchlist(Movie movie)
