@@ -6,6 +6,31 @@
 
 <h1>Watchlist</h1>
 
+<h2 class="filter-heading">Filter movies</h2>
+
+<form class="filter-form" @onsubmit="@(async () => await FilterMovies(filterYear, filterGenre, filterActor, filterDirector))">
+    <InputText id="year" @bind-Value="filterYear" placeholder="Year" />
+    <InputText id="director" @bind-Value="filterDirector" placeholder="Director" />
+    <InputText id="actor" @bind-Value="filterActor" placeholder="Actor" />
+    <select id="genre" @bind="filterGenre">
+        <option value="">Genre</option>
+        <option value="Action">Action</option>
+        <option value="Adventure">Adventure</option>
+        <option value="Biography">Biography</option>
+        <option value="Comedy">Comedy</option>
+        <option value="Crime">Crime</option>
+        <option value="Drama">Drama</option>
+        <option value="Documentary">Documentary</option>
+        <option value="Family">Family</option>
+        <option value="Fantasy">Fantasy</option>
+        <option value="History">History</option>
+        <option value="Sci-Fi">Sci-Fi</option>
+        <option value="Sport">Sport</option>
+    </select>
+    <button type="submit" class="filter-button">Apply filter</button>
+    <button type="reset" class="clear-filter-button" @onclick="ResetFilter">Clear filter</button>
+</form>
+
 @if (moviesToWatch == null)
 {
     <p><em>Loading...</em></p>
@@ -17,10 +42,7 @@ else
         <thead>
             <tr>
                 <th @onclick="@(() => SortMoviesBy("Title"))">
-                    <div class="header-content">
-                        Title
-                        <span class="sort-icon">@RenderSortIcon("Title")</span>
-                    </div>
+                    Title @RenderSortIcon("Title")
                 </th>
                 <th @onclick="@(() => SortMoviesBy("Released"))">
                     <div class="header-content">
@@ -43,6 +65,12 @@ else
                         <span class="sort-icon">@RenderSortIcon("Runtime")</span>
                     </div>
                 </th>
+                <th @onclick="@(() => SortMoviesBy("BoxOffice"))">
+                    <div class="header-content">
+                        Box Office
+                        <span class="sort-icon">@RenderSortIcon("BoxOffice")</span>
+                    </div>
+                </th>
                 <th>Awards</th>
                 <th></th>
                 <th></th>
@@ -59,21 +87,22 @@ else
                     <td>@movie.Actors</td>
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
                     <td>@movie.Runtime</td>
+                    <td>@movie.BoxOffice</td>
                     <td>@movie.Awards</td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
                         {
-                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="150" height="250" />
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" width="200" height="300" />
                         }
                         else
                         {
-                            <img src="@movie.Poster" alt="Movie Poster" width="150" height="250" />
+                            <img src="@movie.Poster" alt="Movie Poster" width="200" height="300" />
                         }
                     </td>
                     <td>
                         <div class="button-container">
                             <button class="MoveToWatched-button" @onclick="() => GoToRatingsPage(movie)">Watched</button>
-                            <button class="RemoveFromWatchlist-button" @onclick="async () => RemoveFromWatchlist(movie)">Remove</button>
+                            <button class="RemoveFromWatchlist-button" @onclick="() => RemoveFromWatchlist(movie)">Remove</button>
                         </div>
                     </td>
                 </tr>
@@ -87,6 +116,11 @@ else
     private List<Movie>? moviesToWatch;
     private string? sortBy;
     private bool sortAsc = false;
+
+    private string? filterYear;
+    private string? filterGenre;
+    private string? filterActor;
+    private string? filterDirector;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,6 +136,29 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching watchlist: {ex.Message}");
+        }
+    }
+
+    private async Task FilterMovies(string year, string genre, string actor, string director)
+    {
+        try
+        {
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get?year={year}&genre={genre}&actor={actor}&director={director}");
+            SortMoviesBy("IMDb");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching filtered movie data: {ex.Message}");
+        }
+    }
+
+    private async Task ResetFilter()
+    {
+        moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/watchlist/get");
+
+        if (moviesToWatch != null && moviesToWatch.Any())
+        {
+            SortMoviesBy("IMDb");
         }
     }
 
@@ -161,6 +218,9 @@ else
             case "Runtime":
                 moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
                                         : moviesToWatch.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
+            case "BoxOffice":
+                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => ConvertToBoxOfficeValue(m.BoxOffice)).ToList()
+                                    : moviesToWatch.OrderByDescending(m => ConvertToBoxOfficeValue(m.BoxOffice)).ToList(); break;
         }
         StateHasChanged();
     }
@@ -193,6 +253,22 @@ else
             return minutes;
         }
         return 0; // Return 0 if parsing fails
+    }
+
+    private static long ConvertToBoxOfficeValue(string boxOffice)
+    {
+        if (string.IsNullOrWhiteSpace(boxOffice))
+        {
+            return 0;
+        }
+
+        // Remove non-numeric characters and parse the value
+        if (long.TryParse(boxOffice.Replace("$", "").Replace(",", ""), out var result))
+        {
+            return result;
+        }
+
+        return 0;
     }
 
     private string RenderSortIcon(string column)
