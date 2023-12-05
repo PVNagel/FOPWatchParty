@@ -34,6 +34,7 @@
                             <th>FOP Rating:</th>
                             <td>
                                 <select @bind="fopRating">
+                                    <option value="N/A"></option>
                                     <option value="1.0">1.0</option>
                                     <option value="1.5">1.5</option>
                                     <option value="2.0">2.0</option>
@@ -59,7 +60,8 @@
                         <tr>
                             <th>One Oscar:</th>
                             <td>
-                                <select @bind="oneOscar">
+                                <select @bind="oneOscar" style="height: 24px; width: 450px;">
+                                    <option></option>
                                     <option>Director: @movie.Director</option>
                                     <option>Writer(s): @movie.Writer</option>
                                     @foreach (var actor in movie.Actors.Split(','))
@@ -72,16 +74,17 @@
                         </tr>
                         <tr>
                             <th>Best quote:</th>
-                            <td><input type="text" @bind="bestQuote" /></td>
+                            <td><input type="text" @bind="bestQuote" style="height: 24px; width: 450px;" /></td>
                         </tr>
                         <tr>
                             <th>Funniest quote:</th>
-                            <td><input type="text" @bind="funniestQuote" /></td>
+                            <td><input type="text" @bind="funniestQuote" style="height: 24px; width: 450px;" /></td>
                         </tr>
                         <tr>
                             <th>Could this be remade as a 10 episode Netflix series:</th>
                             <td>
                                 <select @bind="remakeOption">
+                                    <option value=""></option>
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
                                 </select>
@@ -89,7 +92,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <button class="submitFormButton" @onclick="SubmitForm">Submit</button>
+                                <button class="submitReportButton" @onclick="SubmitForm">Submit</button>
                             </td>
                         </tr>
                     </tbody>
@@ -99,10 +102,11 @@
     }
 </div>
 
-@code{
+@code {
     [Parameter]
     public string imdbID { get; set; }
     private Movie movie;
+
     UpdateMovieRequest updateData = new UpdateMovieRequest();
 
     string? fopRating { get; set; }
@@ -127,30 +131,55 @@
     {
         try
         {
-            updateData.FopRating = fopRating;
-            updateData.OneOscar = oneOscar;
-            updateData.BestQuote = bestQuote;
-            updateData.FunniestQuote = funniestQuote;
-            updateData.CanRemakeAsNetflixSeries = remakeOption;
-
-            var response = await httpClient.PutAsJsonAsync($"https://localhost:7055/api/movies/update/{movie.imdbID}", updateData);
-
-            if (response.IsSuccessStatusCode)
+            if (fopRating == null)
             {
-                await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
-                await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
-                await JSRuntime.InvokeVoidAsync("alert", "Form submitted successfully!");
-                navigation.NavigateTo($"/watched");
+                await JSRuntime.InvokeVoidAsync("alert", "Error submitting report. No FOP rating, please try again.");
             }
-
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Error submitting form. Please try again.");
+                updateData.FopRating = fopRating;
+                updateData.OneOscar = oneOscar;
+                updateData.BestQuote = bestQuote;
+                updateData.FunniestQuote = funniestQuote;
+                updateData.CanRemakeAsNetflixSeries = remakeOption;
+
+                var response = await httpClient.PutAsJsonAsync($"https://localhost:7055/api/movies/update/{movie.imdbID}", updateData);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
+                    await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
+                    await JSRuntime.InvokeVoidAsync("alert", "Report submitted successfully!");
+                    navigation.NavigateTo($"/watched");
+                }
+
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Error submitting report. Please try again.");
+                }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error submitting form: {ex.Message}");
+        }
+    }
+
+    private void HandleDropdownChange(ChangeEventArgs e)
+    {
+        // Handle the change event and update oneOscar based on the selected option
+        string selectedOption = e.Value?.ToString();
+
+        if (string.IsNullOrEmpty(selectedOption))
+        {
+            // Set default value based on some conditions
+            // For example, you can set it to the Director's name as a default
+            oneOscar = $"Director: {movie.Director}";
+        }
+        else
+        {
+            // Use the selected option as-is
+            oneOscar = selectedOption;
         }
     }
 }
