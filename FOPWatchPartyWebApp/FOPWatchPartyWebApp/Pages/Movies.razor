@@ -158,11 +158,23 @@ else
 
     private async Task ResetFilter()
     {
-        movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/movies/all");
+        filterYear = null;
+        filterGenre = null;
+        filterActor = null;
+        filterDirector = null;
 
-        if (movieList != null && movieList.Any())
+        try
         {
-            SortMoviesBy("IMDb");
+            movieList = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/movies/all");
+
+            if (movieList != null && movieList.Any())
+            {
+                SortMoviesBy("IMDb");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
         }
     }
 

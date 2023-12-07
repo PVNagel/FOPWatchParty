@@ -47,11 +47,17 @@ form {
 .movie-item {
     text-align: center;
     margin-bottom: 20px;
-    max-width: calc(25% - 20px);
-    flex-basis: calc(25% - 20px);
+    max-width: calc(33.33% - 20px); /* Adjusted max-width for larger movie items */
+    flex-basis: calc(33.33% - 20px); /* Adjusted flex-basis for larger movie items */
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out;
 }
+
+    .movie-item:hover {
+        transform: scale(1.05);
+    }
 
     .movie-item img {
         width: 100%;
@@ -59,9 +65,7 @@ form {
         max-width: 300px;
         max-height: 450px;
         object-fit: cover;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
+        border-radius: 8px; /* Keep border-radius on the image for rounded corners */
     }
 
 .movie-details {

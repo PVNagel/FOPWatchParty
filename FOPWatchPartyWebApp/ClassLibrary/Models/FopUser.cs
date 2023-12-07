@@ -6,9 +6,6 @@ namespace ClassLibrary.Models
     public class FopUser
     {
         [Key]
-        public int Id { get; set; }
-
-        [Required]
         public string Sub { get; set; }
 
         [Required]
