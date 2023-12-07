@@ -3,6 +3,7 @@ using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOPMovieAPI.Migrations
 {
     [DbContext(typeof(FOPDbContext))]
-    partial class FOPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231207125410_AddCustomUsers")]
+    partial class AddCustomUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,11 +26,8 @@ namespace FOPMovieAPI.Migrations
 
             modelBuilder.Entity("ClassLibrary.Models.FopUser", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FamilyName")
                         .HasColumnType("nvarchar(max)");

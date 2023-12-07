@@ -1,5 +1,65 @@
-﻿<h3>UserProfile</h3>
+﻿@page "/userprofile"
+@using System.Security.Claims;
+@using System.Net.Http.Json
+@using System.Net.Http.Headers
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject HttpClient HttpClient
+
+<h3>UserProfile</h3>
+
+<div>
+    <p>User Name: @GetUserName()</p>
+</div>
 
 @code {
+    private ClaimsPrincipal user;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Retrieve the user information
+        user = (ClaimsPrincipal)AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User;
+
+        if (user != null)
+        {
+            // Call API to add user
+            await AddUserToDb();
+        }
+    }
+
+    private async Task AddUserToDb()
+    {
+        var sub = user.FindFirst("sub")?.Value;
+        var name = user.FindFirst("name")?.Value;
+        var pictureUrl = user.FindFirst("picture")?.Value;
+        var givenName = user.FindFirst("given_name")?.Value;
+        var familyName = user.FindFirst("family_name")?.Value;
+
+        var userData = new
+        {
+            Sub = sub,
+            Name = name,
+            PictureUrl = pictureUrl,
+            GivenName = givenName,
+            FamilyName = familyName
+        };
+
+        // Make the API request to add the user
+        var response = await HttpClient.PostAsJsonAsync("https://localhost:7055/api/Users/add-user", userData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("User added successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to add user. Status code: {response.StatusCode}");
+        }
+    }
+
+    private string GetUserName()
+    {
+        // Retrieve the user's name from claims
+        var nameClaim = user?.FindFirst("name");
+        return nameClaim?.Value ?? "Name not found";
+    }
 }
