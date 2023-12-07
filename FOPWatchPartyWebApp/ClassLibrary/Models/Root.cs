@@ -9,7 +9,6 @@ namespace ClassLibrary.Models
 {
     public class Root
     {
-        [Key]
         public int Id { get; set; }
         public List<Search>? Search { get; set; }
         public string? totalResults { get; set; }

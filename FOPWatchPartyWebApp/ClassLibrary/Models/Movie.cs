@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 public class Movie
 {
     [Key]
+    public int MovieId { get; set; }
     public string? imdbID { get; set; }
     public string? Title { get; set; }
     public string? Year { get; set; }

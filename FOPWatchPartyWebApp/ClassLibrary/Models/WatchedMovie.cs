@@ -10,7 +10,8 @@ namespace ClassLibrary.Models
     public class WatchedMovie
     {
         [Key]
-        public int Id { get; set; }
+        public int WatchedMovieId { get; set; }
+        public int MovieId { get; set; }
         public Movie Movie { get; set; }
     }
 }

@@ -1,2 +1,168 @@
-﻿body {
+﻿.user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile-picture img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+/* Header styles */
+h1 {
+    color: #333;
+    font-weight: bold;
+    font-size: 36px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Increase the bottom margin for spacing */
+    border-bottom: 1px solid #3a0647; /* Add a border line under the title for emphasis */
+    padding-bottom: 10px; /* Adjust the padding for space between the title and border */
+}
+
+h2 {
+    color: #333;
+    font-weight: bold;
+    margin-top: 20px; /* Increase the bottom margin for spacing */
+    margin-bottom: 20px; /* Increase the bottom margin for spacing */
+    font-size: 20px; /* Adjust the font size as needed */
+}
+
+/* Table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Table header styles */
+th {
+    position: relative;
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    cursor: pointer;
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #000;
+    transition: background 0.3s;
+}
+
+    /* Table header hover effect */
+    th:hover {
+        background: linear-gradient(180deg, #003366 0%, #3a0647 70%);
+    }
+
+/* Adjust the width of the Title column */
+.table td:nth-child(1),
+.table th:nth-child(1) {
+    width: 200px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Genre column */
+.table td:nth-child(3),
+.table th:nth-child(3) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Directors column */
+.table td:nth-child(4),
+.table th:nth-child(4) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of Actors column */
+.table td:nth-child(5),
+.table th:nth-child(5) {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Adjust the width of the IMDb column */
+.table td:nth-child(6),
+.table th:nth-child(6) {
+    min-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width of the Runtime column */
+.table td:nth-child(7),
+.table th:nth-child(7) {
+    min-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width of the Box office column */
+.table td:nth-child(8),
+.table th:nth-child(8) {
+    min-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width and text wrapping of Awards column cells */
+.table td:nth-child(9),
+.table th:nth-child(9) {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+/* Sort icon styles */
+.sort-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 5px;
+    vertical-align: middle;
+    transition: transform 0.3s ease-in-out;
+    z-index: 1;
+}
+
+    /* Rotate up arrow for ascending order */
+    .sort-icon.asc {
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Rotate down arrow for descending order */
+    .sort-icon.desc {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+/* Table cell styles */
+.table td,
+.table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Movie title styles */
+.movie-title {
+    cursor: pointer;
+    color: #000;
+    font-weight: bold;
+    white-space: normal;
 }

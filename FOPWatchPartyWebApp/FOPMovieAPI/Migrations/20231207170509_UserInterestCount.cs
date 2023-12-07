@@ -5,24 +5,25 @@
 namespace FOPMovieAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class AddFOPrating : Migration
+    public partial class UserInterestCount : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "FOPrating",
-                table: "Movies",
-                type: "nvarchar(max)",
-                nullable: true);
+            migrationBuilder.AddColumn<int>(
+                name: "InterestedUsersCount",
+                table: "Watchlist",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "FOPrating",
-                table: "Movies");
+                name: "InterestedUsersCount",
+                table: "Watchlist");
         }
     }
 }

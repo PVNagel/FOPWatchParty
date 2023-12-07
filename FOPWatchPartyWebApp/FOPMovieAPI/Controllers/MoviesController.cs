@@ -26,7 +26,7 @@ namespace FOPMovieAPI.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllMovies([FromQuery(Name = "year")] string year = null,[FromQuery(Name = "genre")] string genre = null,[FromQuery(Name = "actor")] string actor = null,[FromQuery(Name = "director")] string director = null)
+        public async Task<IActionResult> GetAllMovies([FromQuery] string year = null, [FromQuery] string genre = null, [FromQuery] string actor = null, [FromQuery] string director = null)
         {
             try
             {
@@ -82,6 +82,29 @@ namespace FOPMovieAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Error adding movie to the database: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpGet("{movieId}")]
+        public async Task<IActionResult> GetMovieById(int movieId)
+        {
+            try
+            {
+                var movie = await _dbContext.Movies.FindAsync(movieId);
+
+                if (movie != null)
+                {
+                    return Ok(movie);
+                }
+                else
+                {
+                    return NotFound("Movie not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting movie data: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }

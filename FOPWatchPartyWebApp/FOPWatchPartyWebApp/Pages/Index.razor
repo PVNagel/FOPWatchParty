@@ -1,9 +1,174 @@
 ﻿@page "/"
 
+@inject HttpClient httpClient
+
 <PageTitle>Index</PageTitle>
 
-<h1>Welcome to the FOP WatchParty Webapp</h1>
+<div class="welcome-container">
+    <h1>Welcome to the <span class="brand-color">FOP WatchParty</span> Webapp</h1>
 
-Welcome to your new app.
+    <div class="movie-container">
+        @foreach (var movie in movies)
+        {
+            <div class="movie-item">
+                <img src="@movie.Poster" class="movie-poster" />
+            </div>
+        }
+    </div>
 
-<SurveyPrompt Title="How is FOP for you?" />
+    <p class="tagline">
+        Elevate your movie experience with FOP WatchParty!
+    </p>
+
+    <ul class="features-list">
+        <li>Add movies to your watchlist</li>
+        <li>Mark movies as "Interested" to keep track of what you want to watch</li>
+        <li>Make reports on movies you've watched</li>
+    </ul>
+
+    <p class="cta">
+        To start enjoying these features and personalize your experience, please log in or create an account.
+    </p>
+
+    <AuthorizeView>
+        <Authorized>
+            <p class="user-greeting">
+                You are currently logged in. Start exploring your watchlist now!
+            </p>
+        </Authorized>
+        <NotAuthorized>
+            <p class="login-prompt">
+                <a href="authentication/login" class="cta-button">Log in</a> with Google to get started.
+            </p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    private List<Movie>? movies = new List<Movie>();
+    private Movie? movie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/tt1130884");
+        movies.Add(movie);
+        movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/tt1877830");
+        movies.Add(movie);
+        // movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/tt0325980");
+        // movies.Add(movie);
+        movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/imdb-id/tt15398776");
+        movies.Add(movie);
+    }
+}
+
+<style>
+    .welcome-container {
+        max-width: 800px;
+        margin: auto;
+        text-align: center;
+    }
+
+    h1 span.brand-color {
+        color: #3a0647; /* Color from the provided button style */
+        font-weight: bold;
+    }
+
+    .movie-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        margin-top: 20px;
+    }
+
+    .movie-item {
+        text-align: center;
+        margin-bottom: 20px;
+        max-width: calc(33.33% - 20px); /* Adjusted max-width for larger movie items */
+        flex-basis: calc(33.33% - 20px); /* Adjusted flex-basis for larger movie items */
+        box-sizing: border-box;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .movie-item:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-item img {
+            width: 100%;
+            height: auto;
+            max-width: 300px;
+            max-height: 450px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+
+    .movie-details {
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 0 0 8px 8px;
+    }
+
+        .movie-details p {
+            margin: 0;
+        }
+
+    .movie-genre {
+        color: #555;
+    }
+
+    .tagline {
+        font-style: italic;
+        color: #777;
+        margin-top: 20px;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+        color: #555;
+        font-weight: bold;
+    }
+
+        .features-list li {
+            margin-bottom: 10px;
+        }
+
+    .cta {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #3a0647; /* Color from the provided button style */
+    }
+
+    .user-greeting {
+        color: #4CAF50; /* Green color for user greeting */
+        font-weight: bold;
+    }
+
+    .login-prompt {
+        margin-top: 20px;
+        font-style: italic;
+        color: #777;
+    }
+
+        .login-prompt a.cta-button {
+            display: inline-block;
+            background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+
+            .login-prompt a.cta-button:hover {
+                background: linear-gradient(180deg, #3a0647 0%, rgb(5, 39, 103) 70%);
+            }
+</style>

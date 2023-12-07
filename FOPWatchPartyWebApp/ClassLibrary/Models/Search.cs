@@ -11,7 +11,6 @@ namespace ClassLibrary.Models
     {
         public string? Title { get; set; }
         public string? Year { get; set; }
-        [Key]
         public string? imdbID { get; set; }
         public string? Type { get; set; }
         public string? Poster { get; set; }

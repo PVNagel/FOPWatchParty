@@ -10,7 +10,10 @@ namespace ClassLibrary.Models
     public class WatchlistMovie
     {
         [Key]
-        public int Id { get; set; }
+        public int WatchlistMovieId { get; set; }
+        public int MovieId { get; set; }
         public Movie Movie { get; set; }
+        public bool IsInterested { get; set; }
+        public int InterestedUsersCount { get; set; }
     }
 }

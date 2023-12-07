@@ -1,8 +1,12 @@
 ﻿@page "/watchlist"
 
 @using System.Globalization
+@using System.Security.Claims;
+@using ClassLibrary.Models;
+@using System.Net.Http.Headers;
 @inject HttpClient httpClient
 @inject NavigationManager navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h1>Watchlist</h1>
 
@@ -16,6 +20,7 @@
         <option value="">Genre</option>
         <option value="Action">Action</option>
         <option value="Adventure">Adventure</option>
+        <option value="Animation">Animation</option>
         <option value="Biography">Biography</option>
         <option value="Comedy">Comedy</option>
         <option value="Crime">Crime</option>
@@ -72,13 +77,20 @@ else
                     </div>
                 </th>
                 <th>Awards</th>
+                <th @onclick="@(() => SortMoviesBy("InterestedUsers"))">
+                    <div class="header-content">
+                        Interested
+                        <span class="sort-icon">@RenderSortIcon("InterestedUsers")</span>
+                    </div>
+                </th>
                 <th></th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var movie in moviesToWatch)
+            @foreach (var watchlistMovie in moviesToWatch)
             {
+                var movie = watchlistMovie.Movie;
                 <tr>
                     <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
                     <td>@movie.Released</td>
@@ -89,6 +101,12 @@ else
                     <td>@movie.Runtime</td>
                     <td>@movie.BoxOffice</td>
                     <td>@movie.Awards</td>
+                    <td style="text-align:center">
+                        @if (watchlistMovie.InterestedUsersCount > 0)
+                        {
+                            <span>@watchlistMovie.InterestedUsersCount</span>
+                        }
+                    </td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
                         {
@@ -101,8 +119,10 @@ else
                     </td>
                     <td>
                         <div class="button-container">
+                            <input type="checkbox" @bind="watchlistMovie.IsInterested" @onclick="() => MarkInterested(watchlistMovie)" />
+                            <label for="interestedCheckbox">Interested</label>
                             <button class="MoveToWatched-button" @onclick="() => GoToRatingsPage(movie)">Watched</button>
-                            <button class="RemoveFromWatchlist-button" @onclick="() => RemoveFromWatchlist(movie)">Remove</button>
+                            <button class="RemoveFromWatchlist-button" @onclick="() => RemoveFromWatchlist(watchlistMovie)">Remove</button>
                         </div>
                     </td>
                 </tr>
@@ -112,11 +132,13 @@ else
 }
 
 @code {
+    private ClaimsPrincipal user;
     private Movie? movie;
-    private List<Movie>? moviesToWatch;
+    private List<WatchlistMovie>? moviesToWatch;
     private string? sortBy;
     private bool sortAsc = false;
 
+    private Dictionary<string, (bool IsInterested, int InterestedUsers)> previousStates = new Dictionary<string, (bool, int)>(); 
     private string? filterYear;
     private string? filterGenre;
     private string? filterActor;
@@ -126,11 +148,47 @@ else
     {
         try
         {
-            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get");
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            user = authState.User;
+
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<WatchlistMovie>>("https://localhost:7055/api/watchlist/get");
 
             if (moviesToWatch != null && moviesToWatch.Any())
             {
+                // Fetch the interested users count for each movie
+                foreach (var watchlistMovie in moviesToWatch)
+                {
+                    watchlistMovie.InterestedUsersCount = await GetInterestedUsersCount(watchlistMovie.Movie.imdbID);
+                }
+
                 SortMoviesBy("IMDb");
+
+                // Get the sub from the claims using the Sub property
+                var sub = user?.FindFirst("sub")?.Value;
+
+                if (string.IsNullOrEmpty(sub))
+                {
+                    // Handle the case where user ID is not available
+                    Console.WriteLine("User ID not found.");
+                    return;
+                }
+
+                // Fetch user's watchlist entries with interest
+                var userWatchlist = await httpClient.GetFromJsonAsync<List<FopUserWatchlist>>($"https://localhost:7055/api/watchlist/getuserwatchlist?sub={sub}");
+
+                if (userWatchlist != null)
+                {
+                    // Mark movies as interested based on the user's watchlist
+                    foreach (var watchlistMovie in moviesToWatch)
+                    {
+                        var userWatchlistEntry = userWatchlist.FirstOrDefault(uw => uw.MovieId == watchlistMovie.MovieId);
+
+                        if (userWatchlistEntry != null)
+                        {
+                            watchlistMovie.IsInterested = userWatchlistEntry.IsInterested;
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -139,11 +197,20 @@ else
         }
     }
 
+
+
     private async Task FilterMovies(string year, string genre, string actor, string director)
     {
         try
         {
-            moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watchlist/get?year={year}&genre={genre}&actor={actor}&director={director}");
+            // Store the previous states before making changes
+            StorePreviousStates();
+
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<WatchlistMovie>>($"https://localhost:7055/api/watchlist/get?year={year}&genre={genre}&actor={actor}&director={director}");
+
+            // Restore the previous states after updating the moviesToWatch list
+            RestorePreviousStates();
+
             SortMoviesBy("IMDb");
         }
         catch (Exception ex)
@@ -154,11 +221,47 @@ else
 
     private async Task ResetFilter()
     {
-        moviesToWatch = await httpClient.GetFromJsonAsync<List<Movie>>("https://localhost:7055/api/watchlist/get");
-
-        if (moviesToWatch != null && moviesToWatch.Any())
+        try
         {
-            SortMoviesBy("IMDb");
+            // Store the previous states before making changes
+            StorePreviousStates();
+
+            moviesToWatch = await httpClient.GetFromJsonAsync<List<WatchlistMovie>>("https://localhost:7055/api/watchlist/get");
+
+            if (moviesToWatch != null && moviesToWatch.Any())
+            {
+                SortMoviesBy("IMDb");
+            }
+
+            // Restore the previous states after updating the moviesToWatch list
+            RestorePreviousStates();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error resetting filter: {ex.Message}");
+        }
+    }
+
+    private void StorePreviousStates()
+    {
+        // Store the previous states before making changes
+        previousStates.Clear();
+        foreach (var watchlistMovie in moviesToWatch)
+        {
+            previousStates[watchlistMovie.Movie.imdbID] = (watchlistMovie.IsInterested, watchlistMovie.InterestedUsersCount);
+        }
+    }
+
+    private void RestorePreviousStates()
+    {
+        // Restore the previous states after updating the moviesToWatch list
+        foreach (var watchlistMovie in moviesToWatch)
+        {
+            if (previousStates.TryGetValue(watchlistMovie.Movie.imdbID, out var state))
+            {
+                watchlistMovie.IsInterested = state.IsInterested;
+                watchlistMovie.InterestedUsersCount = state.InterestedUsers;
+            }
         }
     }
 
@@ -167,25 +270,25 @@ else
         navigation.NavigateTo($"/fopratingspage/{movie.imdbID}");
     }
 
-    private async Task RemoveFromWatchlist(Movie movie)
+    private async Task RemoveFromWatchlist(WatchlistMovie watchlistMovie)
     {
         try
         {
-            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
+            var response = await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={watchlistMovie.Movie.imdbID}");
 
             if (response.IsSuccessStatusCode)
             {
-                moviesToWatch.Remove(movie);
+                moviesToWatch.Remove(watchlistMovie);
                 StateHasChanged();
             }
             else
             {
-                Console.WriteLine($"Error adding movie to the watchlist. Status code: {response.StatusCode}");
+                Console.WriteLine($"Error removing movie from the watchlist. Status code: {response.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error adding movie to the watchlist: {ex.Message}");
+            Console.WriteLine($"Error removing movie from the watchlist: {ex.Message}");
         }
     }
 
@@ -207,22 +310,32 @@ else
         switch (attribute)
         {
             case "Title":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderByDescending(m => m.Title).ToList()
-                                        : moviesToWatch.OrderBy(m => m.Title).ToList(); break;
+                SortMovies(w => w.Movie.Title);
+                break;
             case "Released":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => ConvertToDateTime(m.Released)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => ConvertToDateTime(m.Released)).ToList(); break;
+                SortMovies(w => ConvertToDateTime(w.Movie.Released));
+                break;
             case "IMDb":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => RatingNotAvailableCheck(m.imdbRating)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => RatingNotAvailableCheck(m.imdbRating)).ToList(); break;
+                SortMovies(w => RatingNotAvailableCheck(w.Movie.imdbRating));
+                break;
             case "Runtime":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => GetRuntimeInMinutes(m.Runtime)).ToList()
-                                        : moviesToWatch.OrderByDescending(m => GetRuntimeInMinutes(m.Runtime)).ToList(); break;
+                SortMovies(w => GetRuntimeInMinutes(w.Movie.Runtime));
+                break;
             case "BoxOffice":
-                moviesToWatch = sortAsc ? moviesToWatch.OrderBy(m => ConvertToBoxOfficeValue(m.BoxOffice)).ToList()
-                                    : moviesToWatch.OrderByDescending(m => ConvertToBoxOfficeValue(m.BoxOffice)).ToList(); break;
+                SortMovies(w => ConvertToBoxOfficeValue(w.Movie.BoxOffice));
+                break;
+            case "InterestedUsers":
+                SortMovies(w => w.InterestedUsersCount);
+                break;
         }
+
         StateHasChanged();
+    }
+
+    private void SortMovies<T>(Func<WatchlistMovie, T> keySelector)
+    {
+        moviesToWatch = sortAsc ? moviesToWatch.OrderBy(keySelector).ToList()
+                                : moviesToWatch.OrderByDescending(keySelector).ToList();
     }
 
     private string RatingNotAvailableCheck(string imdbRating)
@@ -271,6 +384,72 @@ else
         return 0;
     }
 
+    private async Task MarkInterested(WatchlistMovie watchlistMovie)
+    {
+        try
+        {
+            // Get the sub from the claims using the Sub property
+            var sub = user?.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(sub))
+            {
+                // Handle the case where user ID is not available
+                Console.WriteLine("User ID not found.");
+                return;
+            }
+
+            // Store the previous interested state
+            var previousInterestedState = watchlistMovie.IsInterested;
+
+            // Update the IsInterested property based on the checkbox status
+            watchlistMovie.IsInterested = !watchlistMovie.IsInterested;
+
+            // Create a new UserWatchlist entity with the updated interest status
+            var fopUserWatchlist = new FopUserWatchlist
+                {
+                    Sub = sub,
+                    MovieId = watchlistMovie.MovieId,
+                    IsInterested = watchlistMovie.IsInterested
+                };
+
+            // Send the request to mark as interested
+            var response = await httpClient.PostAsJsonAsync("https://localhost:7055/api/watchlist/markinterested", fopUserWatchlist);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // If successful, fetch the updated interested users count
+                watchlistMovie.InterestedUsersCount = await GetInterestedUsersCount(watchlistMovie.Movie.imdbID);
+
+                Console.WriteLine($"Marked as {(watchlistMovie.IsInterested ? "interested" : "not interested")} successfully!");
+            }
+            else
+            {
+                // If the request fails, revert the checkbox status to its previous state
+                watchlistMovie.IsInterested = previousInterestedState;
+                Console.WriteLine($"Error marking as interested. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error marking as interested: {ex.Message}");
+        }
+    }
+
+    private async Task<int> GetInterestedUsersCount(string imdbID)
+    {
+        try
+        {
+            var count = await httpClient.GetFromJsonAsync<int>($"https://localhost:7055/api/watchlist/interesteduserscount?imdbID={imdbID}");
+            return count;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching interested users count: {ex.Message}");
+            return 0;
+        }
+    }
+
+
     private string RenderSortIcon(string column)
     {
         if (sortBy == column)
@@ -283,5 +462,12 @@ else
     private void MovieDetails(Movie movie)
     {
         navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+    }
+
+    private string GetUserName()
+    {
+        // Retrieve the user's name from claims
+        var nameClaim = user?.FindFirst("name");
+        return nameClaim?.Value ?? "Name not found";
     }
 }
