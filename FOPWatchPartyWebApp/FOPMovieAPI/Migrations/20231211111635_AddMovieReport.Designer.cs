@@ -3,6 +3,7 @@ using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FOPMovieAPI.Migrations
 {
     [DbContext(typeof(FOPDbContext))]
-    partial class FOPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231211111635_AddMovieReport")]
+    partial class AddMovieReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,6 +75,48 @@ namespace FOPMovieAPI.Migrations
                     b.HasIndex("MovieId");
 
                     b.ToTable("FopUserWatchlists");
+                });
+
+            modelBuilder.Entity("ClassLibrary.Models.MovieReport", b =>
+                {
+                    b.Property<int>("ReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
+
+                    b.Property<string>("BestQuote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CanRemakeAsNetflixSeries")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FopRating")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FunniestQuote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OneOscar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sub")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserSub")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("MovieId");
+
+                    b.HasIndex("UserSub");
+
+                    b.ToTable("MovieReports");
                 });
 
             modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>
@@ -216,41 +261,6 @@ namespace FOPMovieAPI.Migrations
                     b.ToTable("Movies");
                 });
 
-            modelBuilder.Entity("MovieReport", b =>
-                {
-                    b.Property<int>("ReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
-
-                    b.Property<string>("BestQuote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CanRemakeAsNetflixSeries")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FopRating")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FunniestQuote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OneOscar")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Sub")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ReportId");
-
-                    b.ToTable("MovieReports");
-                });
-
             modelBuilder.Entity("ClassLibrary.Models.FopUserWatchlist", b =>
                 {
                     b.HasOne("ClassLibrary.Models.FopUser", "FopUser")
@@ -266,6 +276,23 @@ namespace FOPMovieAPI.Migrations
                     b.Navigation("FopUser");
 
                     b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("ClassLibrary.Models.MovieReport", b =>
+                {
+                    b.HasOne("Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClassLibrary.Models.FopUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserSub");
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ClassLibrary.Models.WatchedMovie", b =>

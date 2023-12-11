@@ -102,7 +102,6 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
-
         [HttpPost("markinterested")]
         public async Task<IActionResult> MarkInterested([FromBody] FopUserWatchlist fopUserWatchlist)
         {
@@ -193,6 +192,24 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpGet("getuserwatchlistbymovieid")]
+        public async Task<IActionResult> GetUserWatchlist(string sub, int movieId)
+        {
+            try
+            {
+                // Get the user's watchlist entries for given movie.
+                var userWatchlist = await _dbContext.FopUserWatchlists
+                    .Where(uw => uw.Sub == sub && uw.MovieId == movieId)
+                    .ToListAsync();
+
+                return Ok(userWatchlist);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting user watchlist: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
 
         private async Task<WatchlistMovie> RetrieveMovieFromDbOrApi(string imdbID)
         {

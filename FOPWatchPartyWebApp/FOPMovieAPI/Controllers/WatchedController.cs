@@ -66,7 +66,9 @@ namespace FOPMovieAPI.Controllers
                 }
                 else
                 {
-                    return Conflict("Movie is already in the watched list");
+                    var watchedMovie = new WatchedMovie { Movie = movie ?? _dbContext.Movies.First(m => m.imdbID == imdbID) };
+                    _dbContext.WatchedMovies.Update(watchedMovie);
+                    return Ok("Movie was already in the watched list");
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿.user-profile {
+﻿﻿.user-profile {
     display: flex;
     align-items: center;
 }
@@ -24,9 +24,9 @@ h1 {
 h2 {
     color: #333;
     font-weight: bold;
-    margin-top: 20px; /* Increase the bottom margin for spacing */
-    margin-bottom: 20px; /* Increase the bottom margin for spacing */
-    font-size: 20px; /* Adjust the font size as needed */
+    margin-top: 25px; /* Increase the bottom margin for spacing */
+    margin-bottom: 25px; /* Increase the bottom margin for spacing */
+    font-size: 25px; /* Adjust the font size as needed */
 }
 
 /* Table styles */

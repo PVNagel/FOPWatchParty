@@ -50,6 +50,7 @@ namespace FOPMovieAPI.Controllers
             }
         }
     }
+
     public class UserDataModel
     {
         public string Sub { get; set; }

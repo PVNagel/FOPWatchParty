@@ -1,10 +1,11 @@
-﻿@page "/fopratingspage/{imdbID}"
-@using System.Net;
+﻿@page "/create-report/{imdbID}"
 @using ClassLibrary.Models;
+@using System.Security.Claims;
 
-@inject HttpClient httpClient
-@inject NavigationManager navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
+@inject NavigationManager navigation
+@inject HttpClient httpClient
 
 <div class="movie-details-container">
     @if (movie == null)
@@ -16,7 +17,7 @@
     else
     {
         <div class="movie-details">
-            <h1 class="movie-title">@movie.Title</h1>
+            <h1 class="movie-title">Movie report: @movie.Title</h1>
             <div class="details-container">
                 <div class="poster-section">
                     @if (movie.Poster == "N/A")
@@ -92,7 +93,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <button class="submitReportButton" @onclick="SubmitForm">Submit</button>
+                                <button class="submitReportButton" @onclick="SubmitReport">Submit</button>
                             </td>
                         </tr>
                     </tbody>
@@ -105,9 +106,8 @@
 @code {
     [Parameter]
     public string imdbID { get; set; }
+    private string userId;
     private Movie movie;
-
-    UpdateMovieRequest updateData = new UpdateMovieRequest();
 
     string? fopRating { get; set; }
     string? oneOscar { get; set; }
@@ -127,59 +127,93 @@
         }
     }
 
-    private async Task SubmitForm()
+    private async Task SubmitReport()
     {
-        try
-        {
-            if (fopRating == null)
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userId = authState.User.FindFirst("sub")?.Value;
+
+        var movieReport = new MovieReport
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Error submitting report. No FOP rating, please try again.");
-            }
-            else
-            {
-                updateData.FopRating = fopRating;
-                updateData.OneOscar = oneOscar;
-                updateData.BestQuote = bestQuote;
-                updateData.FunniestQuote = funniestQuote;
-                updateData.CanRemakeAsNetflixSeries = remakeOption;
+                MovieId = movie.MovieId,
+                Sub = userId,
+                FopRating = fopRating,
+                OneOscar = oneOscar,
+                BestQuote = bestQuote,
+                FunniestQuote = funniestQuote,
+                CanRemakeAsNetflixSeries = remakeOption,
+            };
 
-                var response = await httpClient.PutAsJsonAsync($"https://localhost:7055/api/movies/update/{movie.imdbID}", updateData);
+        var response = await httpClient.PostAsJsonAsync("https://localhost:7055/api/MovieReport/createMovieReport", movieReport);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
-                    await httpClient.DeleteAsync($"https://localhost:7055/api/watchlist/remove?imdbID={movie.imdbID}");
-                    await JSRuntime.InvokeVoidAsync("alert", "Report submitted successfully!");
-                    navigation.NavigateTo($"/watched");
-                }
-
-                else
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", "Error submitting report. Please try again.");
-                }
-            }
-        }
-        catch (Exception ex)
+        if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Error submitting form: {ex.Message}");
-        }
-    }
-
-    private void HandleDropdownChange(ChangeEventArgs e)
-    {
-        // Handle the change event and update oneOscar based on the selected option
-        string selectedOption = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(selectedOption))
-        {
-            // Set default value based on some conditions
-            // For example, you can set it to the Director's name as a default
-            oneOscar = $"Director: {movie.Director}";
+            var addToWatchedResponse = await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
+            await MarkAsWatched(movie);
+            await UpdateFopRating(movie);
+            await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report successfully created or updated");
+            navigation.NavigateTo($"/watched");
         }
         else
         {
-            // Use the selected option as-is
-            oneOscar = selectedOption;
+            await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report creation/update failed");
         }
     }
+
+    private async Task UpdateFopRating(Movie movie)
+    {
+        await httpClient.PutAsync($"https://localhost:7055/api/movies/update/foprating?movieId={movie.MovieId}", null);
+    }
+
+    private async Task MarkAsWatched(Movie movie)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                // Handle the case where user ID is not available
+                Console.WriteLine("User ID not found.");
+                return;
+            }
+
+            List<FopUserWatchlist> userWatchlist = await httpClient.GetFromJsonAsync<List<FopUserWatchlist>>($"https://localhost:7055/api/watchlist/getuserwatchlistbymovieid?sub={userId}&movieId={movie.MovieId}");
+
+            // Use asynchronous iteration with Task.WhenAll for better performance
+            var updateTasks = userWatchlist.Select(async item =>
+            {
+                if (item.MovieId == movie.MovieId)
+                {
+                    item.IsInterested = false;
+                    var fopUserWatchlist = new FopUserWatchlist
+                        {
+                            Sub = userId,
+                            MovieId = item.MovieId,
+                            IsInterested = item.IsInterested
+                        };
+
+                    // Send the request to mark as interested
+                    var response = await httpClient.PostAsJsonAsync("https://localhost:7055/api/watchlist/markinterested", fopUserWatchlist);
+                }
+            });
+
+            // Wait for all updates to complete before returning
+            await Task.WhenAll(updateTasks);
+        }
+        catch (HttpRequestException ex)
+        {
+            // Handle HTTP-related errors
+            Console.WriteLine($"HTTP error marking as interested: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // Handle other unexpected errors
+            Console.WriteLine($"Error marking as interested: {ex.Message}");
+        }
+    }
+
 }
+
+<script>
+    function showConfirmationDialog(message) {
+        alert(message);
+    }
+</script>
