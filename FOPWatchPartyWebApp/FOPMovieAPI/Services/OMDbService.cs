@@ -21,13 +21,13 @@ namespace FOPMovieAPI.Services
 
         public async Task<Movie> GetMovieByTitleAsync(string title)
         {
-            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&t={title}");
+            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&type=movie&t={title}");
             return JsonSerializer.Deserialize<Movie>(response);
         }
 
         public async Task<Root> SearchMoviesAsync(string title)
         {
-            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&s={title}&page=1");
+            var response = await _httpClient.GetStringAsync($"https://www.omdbapi.com/?apikey=aaf8907d&s={title}&type=movie&page=1");
             return JsonSerializer.Deserialize<Root>(response);
         }
     }
