@@ -104,8 +104,8 @@
 </div>
 
 @code {
-        [Parameter]
-        public string imdbID { get; set; }
+    [Parameter]
+    public string imdbID { get; set; }
     private string userId;
     private Movie movie;
 
@@ -149,6 +149,7 @@
         {
             var addToWatchedResponse = await httpClient.PostAsync($"https://localhost:7055/api/watched/add?imdbID={movie.imdbID}", null);
             await MarkAsWatched(movie);
+            await UpdateFopRating(movie);
             await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report successfully created or updated");
             navigation.NavigateTo($"/watched");
         }
@@ -156,6 +157,11 @@
         {
             await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report creation/update failed");
         }
+    }
+
+    private async Task UpdateFopRating(Movie movie)
+    {
+        await httpClient.PutAsync($"https://localhost:7055/api/movies/update/foprating?movieId={movie.MovieId}", null);
     }
 
     private async Task MarkAsWatched(Movie movie)

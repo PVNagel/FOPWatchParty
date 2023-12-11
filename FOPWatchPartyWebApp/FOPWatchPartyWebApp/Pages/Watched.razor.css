@@ -53,8 +53,9 @@ th {
 /* Adjust the width of the Title column */
 .table td:nth-child(1),
 .table th:nth-child(1) {
-    width: 200px;
-    max-width: 200px;
+    font-weight: bold;
+    width: 100px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -89,7 +90,6 @@ th {
     min-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* Adjust the width of the Runtime column */

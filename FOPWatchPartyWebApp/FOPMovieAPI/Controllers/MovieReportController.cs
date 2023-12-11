@@ -6,6 +6,7 @@ using ClassLibrary.Models;
 using FOPMovieAPI.Services;
 using FOPMovieAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace FOPMovieAPI.Controllers
 {

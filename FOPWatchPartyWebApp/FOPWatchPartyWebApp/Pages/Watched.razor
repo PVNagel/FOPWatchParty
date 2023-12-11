@@ -16,36 +16,19 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th @onclick="@(() => SortMoviesBy("Title"))">
-                    Title @RenderSortIcon("Title")
-                </th>
-                <th @onclick="@(() => SortMoviesBy("Released"))">
-                    <div class="header-content">
-                        Released
-                        <span class="sort-icon">@RenderSortIcon("Released")</span>
-                    </div>
-                </th>
+                <th>Ranked</th>
+                <th>Title</th>
+                <th>Released</th>
                 <th>Genre</th>
                 <th>Director</th>
                 <th>Actors</th>
-                <th @onclick="@(() => SortMoviesBy("IMDb"))">
-                    <div class="header-content">
-                        IMDb
-                        <span class="sort-icon">@RenderSortIcon("IMDb")</span>
-                    </div>
-                </th>
-                <th @onclick="@(() => SortMoviesBy("FopRating"))">
+                <th>IMDb</th>
+                <th>
                     <div class="header-content">
                         FOP
-                        <span class="sort-icon">@RenderSortIcon("FopRating")</span>
                     </div>
                 </th>
-                <th @onclick="@(() => SortMoviesBy("BoxOffice"))">
-                    <div class="header-content">
-                        Box Office
-                        <span class="sort-icon">@RenderSortIcon("BoxOffice")</span>
-                    </div>
-                </th>
+                <th>Box Office</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -54,6 +37,7 @@ else
             @foreach (var movie in moviesWatched)
             {
                 <tr>
+                    <td>Nr. @(rowIndex + 1)</td>
                     <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
                     <td>@movie.Released</td>
                     <td>@movie.Genre</td>
@@ -78,15 +62,18 @@ else
                         </div>
                     </td>
                 </tr>
+                rowIndex++;
             }
         </tbody>
     </table>
 }
 
 @code {
+    int rowIndex = 0;
     private List<Movie>? moviesWatched;
     private string? sortBy;
     private bool sortAsc = false;
+    private bool isFopRatingUpdated = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,7 +81,7 @@ else
         {
             moviesWatched = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watched/get");
 
-            // Check if movieList is not null before sorting
+            // Check if movieList is not null before proceeding
             if (moviesWatched != null)
             {
                 SortMoviesBy("FOPrating");
@@ -105,6 +92,7 @@ else
             Console.WriteLine($"Error fetching watchlist: {ex.Message}");
         }
     }
+
 
     private void SortMoviesBy(string attribute)
     {
@@ -136,7 +124,6 @@ else
                                         : moviesWatched.OrderByDescending(m => RatingNotAvailableCheck(m.FopRating)).ToList();
                 break;
         }
-        StateHasChanged();
     }
 
     private string RatingNotAvailableCheck(string imdbRating)
@@ -147,15 +134,6 @@ else
             return "0.0";
         }
         return imdbRating;
-    }
-
-    private string RenderSortIcon(string column)
-    {
-        if (sortBy == column)
-        {
-            return sortAsc ? "🔼" : "🔽"; // Up arrow for ascending, down arrow for descending
-        }
-        return string.Empty;
     }
 
     private void MovieDetails(Movie movie)

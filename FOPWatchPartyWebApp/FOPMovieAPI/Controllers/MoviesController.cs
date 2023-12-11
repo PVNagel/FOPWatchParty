@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -155,6 +156,55 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpPut("update/foprating")]
+        public async Task<IActionResult> UpdateFopRating(int movieId)
+        {
+            double overallFopRating = 0;
+
+            try
+            {
+                var movieReports = await _dbContext.MovieReports
+                                                   .Where(r => r.MovieId == movieId)
+                                                   .ToListAsync();
+
+                foreach (MovieReport report in movieReports)
+                {
+                    overallFopRating += double.Parse(report.FopRating, CultureInfo.InvariantCulture);
+                }
+                overallFopRating /= movieReports.Count;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting movies from the database: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+
+            try
+            {
+                var movie = _dbContext.Movies.FirstOrDefault(movie => movie.MovieId == movieId);
+
+                if (movie != null)
+                {
+                    // Format the overallFopRating with a dot as the decimal separator
+                    movie.FopRating = overallFopRating.ToString(CultureInfo.InvariantCulture);
+
+                    _dbContext.Movies.Update(movie);
+                    _dbContext.SaveChanges();
+
+                    return Ok(movie);
+                }
+                else
+                {
+                    return BadRequest("Invalid IMDb ID or movie not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating movie: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
 
         [HttpPut("update/{imdbID}")]
         public async Task<IActionResult> UpdateFopRating(string imdbID, [FromBody] UpdateMovieRequest request)
