@@ -132,6 +132,30 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpGet("details/{movieId}")]
+        public async Task<IActionResult> GetMovieDetailsById(int movieId)
+        {
+            try
+            {
+                var movie = await _dbContext.Movies.FindAsync(movieId);
+
+                if (movie != null)
+                {
+                    return Ok(movie);
+                }
+                else
+                {
+                    return NotFound("Movie not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting movie details: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
         [HttpPut("update/{imdbID}")]
         public async Task<IActionResult> UpdateFopRating(string imdbID, [FromBody] UpdateMovieRequest request)
         {

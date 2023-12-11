@@ -17,27 +17,36 @@ else
         <thead>
             <tr>
                 <th @onclick="@(() => SortMoviesBy("Title"))">
+                    Title @RenderSortIcon("Title")
+                </th>
+                <th @onclick="@(() => SortMoviesBy("Released"))">
                     <div class="header-content">
-                        Title
-                        <span class="sort-icon">@RenderSortIcon("Title")</span>
+                        Released
+                        <span class="sort-icon">@RenderSortIcon("Released")</span>
                     </div>
                 </th>
-                <th>One Oscar</th>
-                <th>Best Quote</th>
-                <th>Funniest Quote</th>
-                <th>Remake as Netflix series</th>
-                <th @onclick="@(() => SortMoviesBy("imdbRating"))">
+                <th>Genre</th>
+                <th>Director</th>
+                <th>Actors</th>
+                <th @onclick="@(() => SortMoviesBy("IMDb"))">
                     <div class="header-content">
                         IMDb
-                        <span class="sort-icon">@RenderSortIcon("imdbRating")</span>
+                        <span class="sort-icon">@RenderSortIcon("IMDb")</span>
                     </div>
                 </th>
-                <th @onclick="@(() => SortMoviesBy("FOPrating"))">
+                <th @onclick="@(() => SortMoviesBy("FopRating"))">
                     <div class="header-content">
                         FOP
-                        <span class="sort-icon">@RenderSortIcon("FOPrating")</span>
+                        <span class="sort-icon">@RenderSortIcon("FopRating")</span>
                     </div>
                 </th>
+                <th @onclick="@(() => SortMoviesBy("BoxOffice"))">
+                    <div class="header-content">
+                        Box Office
+                        <span class="sort-icon">@RenderSortIcon("BoxOffice")</span>
+                    </div>
+                </th>
+                <th></th>
                 <th></th>
             </tr>
         </thead>
@@ -46,12 +55,13 @@ else
             {
                 <tr>
                     <td class="movie-title" @onclick="() => MovieDetails(movie)">@movie.Title</td>
-                    <td>@movie.OneOscar</td>
-                    <td>@movie.BestQuote</td>
-                    <td>@movie.FunniestQuote</td>
-                    <td>@movie.CanRemakeAsNetflixSeries</td>
+                    <td>@movie.Released</td>
+                    <td>@movie.Genre</td>
+                    <td>@movie.Director</td>
+                    <td>@movie.Actors</td>
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
-                    <td>@movie.FopRating/10</td>
+                    <td>@movie.FopRating</td>
+                    <td>@movie.BoxOffice</td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
                         {
@@ -62,11 +72,17 @@ else
                             <img src="@movie.Poster" alt="Movie Poster" width="200" height="300" />
                         }
                     </td>
+                    <td>
+                        <div class="button-container">
+                            <button class="reportsButton" @onclick="OnInitializedAsync">Movie report</button>
+                        </div>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
+
 @code {
     private List<Movie>? moviesWatched;
     private string? sortBy;
@@ -79,7 +95,7 @@ else
             moviesWatched = await httpClient.GetFromJsonAsync<List<Movie>>($"https://localhost:7055/api/watched/get");
 
             // Check if movieList is not null before sorting
-            if (moviesWatched != null && moviesWatched.Any())
+            if (moviesWatched != null)
             {
                 SortMoviesBy("FOPrating");
             }

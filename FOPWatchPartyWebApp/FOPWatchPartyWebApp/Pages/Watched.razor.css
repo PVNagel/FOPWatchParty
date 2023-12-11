@@ -17,6 +17,9 @@ h1 {
     color: #333;
     font-weight: bold;
     font-size: 36px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Increase the bottom margin for spacing */
+    border-bottom: 1px solid #3a0647; /* Add a border line under the title for emphasis */
+    padding-bottom: 10px; /* Adjust the padding for space between the title and border */
 }
 
 /* Table styles */
@@ -48,10 +51,67 @@ th {
     }
 
 /* Adjust the width of the Title column */
-.table td:nth-child(1), /* Assuming the Title column is the first column, adjust the index accordingly */
+.table td:nth-child(1),
 .table th:nth-child(1) {
-    width: 200px; /* Set the desired width for the Title column */
-    max-width: 200px; /* Set the maximum width for flexibility */
+    width: 200px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width of Genre column */
+.table td:nth-child(3),
+.table th:nth-child(3) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width of Directors column */
+.table td:nth-child(4),
+.table th:nth-child(4) {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width of Actors column */
+.table td:nth-child(5),
+.table th:nth-child(5) {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width of the IMDb column */
+.table td:nth-child(6),
+.table th:nth-child(6) {
+    min-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the width of the Runtime column */
+.table td:nth-child(7),
+.table th:nth-child(7) {
+    min-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width of the Box office column */
+.table td:nth-child(8),
+.table th:nth-child(8) {
+    min-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust the width and text wrapping of Awards column cells */
+.table td:nth-child(9),
+.table th:nth-child(9) {
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
@@ -81,7 +141,6 @@ th {
 /* Table cell styles */
 .table td,
 .table th {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
