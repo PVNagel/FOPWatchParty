@@ -160,6 +160,7 @@ namespace FOPMovieAPI.Controllers
         public async Task<IActionResult> UpdateFopRating(int movieId)
         {
             double overallFopRating = 0;
+            int nonNullFopRatingCount = 0; // Keep track of non-null FopRating count
 
             try
             {
@@ -169,14 +170,22 @@ namespace FOPMovieAPI.Controllers
 
                 foreach (MovieReport report in movieReports)
                 {
-                    overallFopRating += double.Parse(report.FopRating, CultureInfo.InvariantCulture);
+                    if (report.FopRating != null)
+                    {
+                        overallFopRating += double.Parse(report.FopRating, CultureInfo.InvariantCulture);
+                        nonNullFopRatingCount++;
+                    }
                 }
-                overallFopRating /= movieReports.Count;
 
+                // Avoid division by zero
+                if (nonNullFopRatingCount > 0)
+                {
+                    overallFopRating /= nonNullFopRatingCount;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting movies from the database: {ex.Message}");
+                _logger.LogError($"Error getting movieReports from the database: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
 
@@ -205,6 +214,7 @@ namespace FOPMovieAPI.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
 
         [HttpPut("update/{imdbID}")]
         public async Task<IActionResult> UpdateFopRating(string imdbID, [FromBody] UpdateMovieRequest request)

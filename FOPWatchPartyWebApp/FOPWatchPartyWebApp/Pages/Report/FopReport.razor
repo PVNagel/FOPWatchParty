@@ -98,13 +98,13 @@
                             <td>@movieReport.BestQuote</td>
                             <td>@movieReport.FunniestQuote</td>
                             <td>@movieReport.CanRemakeAsNetflixSeries</td>
-                            <td>@movieReport.FopRating/10</td>
+                            <td>@(movieReport.FopRating != null ? $"{movieReport.FopRating}/10" : "N/A")</td>
                         </tr>
                     }
                 </tbody>
+
             </table>
         </div>
-
     }
 </div>
 

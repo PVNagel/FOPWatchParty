@@ -1,0 +1,88 @@
+﻿/* Movie Page styles */
+
+.movie-details-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+}
+
+.loading-message {
+    font-style: italic;
+    color: #555;
+}
+
+.movie-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.movie-title {
+    font-size: 64px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.details-container {
+    display: flex;
+    margin-top: 40px;
+}
+
+/* Updated Movie Page styles */
+.poster-section {
+    margin-right: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.movie-poster,
+.default-poster {
+    width: 300px; /* Allow regular movie posters to be responsive */
+    height: 500px; /* Set a specific height for both posters */
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.movie-poster {
+    width: 300px; /* Allow regular movie posters to be responsive */
+    height: 500px; /* Set a specific height for both posters */
+}
+
+.movie-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 40px;
+}
+
+    .movie-table th,
+    .movie-table td {
+        padding: 20px;
+        font-size: 18px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.submitReportButton {
+    background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .submitReportButton:hover {
+        background: linear-gradient(180deg, #003366 0%, #3a0647 70%);
+    }

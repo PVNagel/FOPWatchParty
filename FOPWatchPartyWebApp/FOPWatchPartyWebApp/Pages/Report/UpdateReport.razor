@@ -1,0 +1,163 @@
+﻿@page "/update-report/{userId}/{MovieId}"
+
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigation
+
+<h3>UpdateReport</h3>
+
+<div class="movie-details">
+    <h1 class="movie-title">Movie report: @movie.Title</h1>
+    <div class="details-container">
+        <div class="poster-section">
+            @if (movie.Poster == "N/A")
+            {
+                <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" />
+            }
+            else
+            {
+                <img src="@movie.Poster" alt="Movie Poster" class="movie-poster" />
+            }
+        </div>
+        <table class="movie-table">
+            <tbody>
+                <tr>
+                    <th>FOP Rating:</th>
+                    <td>
+                        <select @bind="fopRating">
+                            <option value="N/A"></option>
+                            <option value="1.0">1.0</option>
+                            <option value="1.5">1.5</option>
+                            <option value="2.0">2.0</option>
+                            <option value="2.5">2.5</option>
+                            <option value="3.0">3.0</option>
+                            <option value="3.5">3.5</option>
+                            <option value="4.0">4.0</option>
+                            <option value="4.5">4.5</option>
+                            <option value="5.0">5.0</option>
+                            <option value="5.5">5.5</option>
+                            <option value="6.0">6.0</option>
+                            <option value="6.5">6.5</option>
+                            <option value="7.0">7.0</option>
+                            <option value="7.5">7.5</option>
+                            <option value="8.0">8.0</option>
+                            <option value="8.5">8.5</option>
+                            <option value="9.0">9.0</option>
+                            <option value="9.5">9.5</option>
+                            <option value="10">10</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>One Oscar:</th>
+                    <td>
+                        <select @bind="oneOscar" style="height: 24px; width: 450px;">
+                            <option></option>
+                            <option>Director: @movie.Director</option>
+                            <option>Writer(s): @movie.Writer</option>
+                            @foreach (var actor in movie.Actors.Split(','))
+                            {
+                                <option>Actor: @actor.Trim()</option>
+                            }
+                            <option>Visual effects team</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Best quote:</th>
+                    <td><input type="text" @bind="bestQuote" style="height: 24px; width: 450px;" /></td>
+                </tr>
+                <tr>
+                    <th>Funniest quote:</th>
+                    <td><input type="text" @bind="funniestQuote" style="height: 24px; width: 450px;" /></td>
+                </tr>
+                <tr>
+                    <th>Could this be remade as a 10 episode Netflix series:</th>
+                    <td>
+                        <select @bind="remakeOption">
+                            <option value=""></option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button class="submitReportButton" @onclick="SubmitReport">Submit</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string userId { get; set; }
+    [Parameter]
+    public string MovieId { get; set; }
+
+    private MovieReport movieReport;
+    private Movie movie;
+
+    string? fopRating { get; set; }
+    string? oneOscar { get; set; }
+    string? bestQuote { get; set; }
+    string? funniestQuote { get; set; }
+    string? remakeOption { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/{MovieId}");
+            movieReport = await httpClient.GetFromJsonAsync<MovieReport>($"https://localhost:7055/api/MovieReport/getReportByMovieIdAndUserId?movieId={MovieId}&userId={userId}");
+
+            fopRating = movieReport.FopRating;
+            oneOscar = movieReport.OneOscar;
+            bestQuote = movieReport.BestQuote;
+            funniestQuote = movieReport.FunniestQuote;
+            remakeOption = movieReport.CanRemakeAsNetflixSeries;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching movie data: {ex.Message}");
+        }
+    }
+
+    private async Task SubmitReport()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        userId = authState.User.FindFirst("sub")?.Value;
+
+        var movieReport = new MovieReport
+            {
+                MovieId = movie.MovieId,
+                Sub = userId,
+                FopRating = fopRating,
+                OneOscar = oneOscar,
+                BestQuote = bestQuote,
+                FunniestQuote = funniestQuote,
+                CanRemakeAsNetflixSeries = remakeOption,
+            };
+
+        var response = await httpClient.PostAsJsonAsync("https://localhost:7055/api/MovieReport/updateMovieReport", movieReport);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await UpdateFopRating(movie);
+            await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report successfully updated");
+            navigation.NavigateTo($"/watched");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("showConfirmationDialog", "Report update failed");
+        }
+    }
+
+    private async Task UpdateFopRating(Movie movie)
+    {
+        await httpClient.PutAsync($"https://localhost:7055/api/movies/update/foprating?movieId={movie.MovieId}", null);
+    }
+}

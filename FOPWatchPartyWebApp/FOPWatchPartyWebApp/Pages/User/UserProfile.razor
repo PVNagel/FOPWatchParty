@@ -131,7 +131,7 @@ else
                     <td>@movieReport.FunniestQuote</td>
                     <td>@movieReport.CanRemakeAsNetflixSeries</td>
                     <td>@movieReport.Movie.imdbRating/10 <br />(@movieReport.Movie.imdbVotes)</td>
-                    <td>@movieReport.FopRating/10</td>
+                    <td>@(movieReport.FopRating != null ? $"{movieReport.FopRating}/10" : "N/A")</td>
                     <td @onclick="() => MovieDetails(movieReport.Movie)">
                         @if (movieReport.Movie.Poster == "N/A")
                         {

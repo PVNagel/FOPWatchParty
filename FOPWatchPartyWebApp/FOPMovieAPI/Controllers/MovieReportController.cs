@@ -59,6 +59,67 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpGet("getReportByMovieIdAndUserId")]
+        public async Task<IActionResult> GetReportByMovieIdAndUserId(int movieId, string userId)
+        {
+            try
+            {
+                var movieReport = await _dbContext.MovieReports
+                                                  .FirstOrDefaultAsync(r => r.MovieId == movieId && r.Sub == userId);
+
+                if (movieReport == null)
+                {
+                    return NotFound("Movie report not found");
+                }
+
+                return Ok(movieReport);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting movie report by MovieId and Sub: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpPost("updateMovieReport")]
+        public async Task<IActionResult> UpdateReport([FromBody] MovieReport movieReport)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Check if a report already exists for the given user and movie
+                var existingReport = await _dbContext.MovieReports
+                    .FirstOrDefaultAsync(r => r.MovieId == movieReport.MovieId && r.Sub == movieReport.Sub);
+
+                if (existingReport != null)
+                {
+                    existingReport.FopRating = movieReport.FopRating;
+                    existingReport.OneOscar = movieReport.OneOscar;
+                    existingReport.BestQuote = movieReport.BestQuote;
+                    existingReport.FunniestQuote = movieReport.FunniestQuote;
+                    existingReport.CanRemakeAsNetflixSeries = movieReport.CanRemakeAsNetflixSeries;
+                }
+                else
+                {
+                    return NotFound("Report not found for the given user and movie.");
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(existingReport); // Returning the updated report
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating movie report: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
         [HttpPost("createMovieReport")]
         public async Task<IActionResult> CreateReport([FromBody] MovieReport movieReport)
         {

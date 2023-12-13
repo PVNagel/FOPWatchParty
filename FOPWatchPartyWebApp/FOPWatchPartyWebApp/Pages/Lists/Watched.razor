@@ -1,8 +1,10 @@
 ﻿@page "/watched"
 
 @using System.Globalization;
+@using System.Security.Claims;
 @inject HttpClient httpClient
 @inject NavigationManager navigation
+@inject AuthenticationStateProvider authenticationStateProvider
 
 <h1>Watched</h1>
 
@@ -44,7 +46,7 @@ else
                     <td>@movie.Director</td>
                     <td>@movie.Actors</td>
                     <td>@movie.imdbRating/10 <br />(@movie.imdbVotes)</td>
-                    <td>@movie.FopRating/10</td>
+                    <td>@(movie.FopRating != null ? $"{movie.FopRating}/10" : "N/A")</td>
                     <td>@movie.BoxOffice</td>
                     <td @onclick="() => MovieDetails(movie)">
                         @if (movie.Poster == "N/A")
@@ -59,7 +61,7 @@ else
                     <td>
                         <div class="button-container">
                             <button class="reportsButton" @onclick="() => MovieFopReport(movie)">Movie report</button>
-                            <button class="reportsButton" @onclick="OnInitializedAsync">My report</button>
+                            <button class="reportsButton" @onclick="() => UpdateReport(movie)">Update report</button>
                         </div>
                     </td>
                 </tr>
@@ -140,6 +142,13 @@ else
     private void MovieDetails(Movie movie)
     {
         navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+    }
+
+    private async void UpdateReport(Movie movie)
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        string userId = authState.User.FindFirst("sub")?.Value;
+        navigation.NavigateTo($"/update-report/{userId}/{movie.MovieId}");
     }
 
     private void MovieFopReport(Movie movie)
