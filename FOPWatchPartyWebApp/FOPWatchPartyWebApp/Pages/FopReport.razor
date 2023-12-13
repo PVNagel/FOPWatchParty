@@ -1,0 +1,137 @@
+﻿@page "/fopReport/{MovieId}"
+@using ClassLibrary.Models;
+
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+
+<div class="movie-details-container">
+    @if (movie == null)
+    {
+        <div class="loading-message">
+            <em>Loading...</em>
+        </div>
+    }
+    else
+    {
+        <div class="movie-details">
+            <h1 class="movie-title">FOP Report: @movie.Title</h1>
+            <div class="details-container">
+                <div class="movie-container">
+                    <div class="poster-section">
+                        <p class="movie-top-info">Released: @movie.Released</p>
+                        @if (movie.Poster == "N/A")
+                        {
+                            <img src="https://i.imgur.com/l1wt1eN.jpg" alt="Default Movie Poster" />
+                        }
+                        else
+                        {
+                            <img src="@movie.Poster" alt="Movie Poster" class="movie-poster" />
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <p class="plot-section">@movie.Plot</p>
+                    <table class="movie-table">
+                        <tbody>
+                            <tr>
+                                <th>Director:</th>
+                                <td>@movie.Director</td>
+                            </tr>
+                            <tr>
+                                <th>Writer(s):</th>
+                                <td>@movie.Writer</td>
+                            </tr>
+                            <tr>
+                                <th>Stars:</th>
+                                <td>@movie.Actors</td>
+                            </tr>
+                            <tr>
+                                <th>Genre:</th>
+                                <td>@movie.Genre</td>
+                            </tr>
+                            <tr>
+                                <th>IMDb:</th>
+                                <td>@movie.imdbRating/10 (@movie.imdbVotes)</td>
+                            </tr>
+                            <tr>
+                                <th>FOP:</th>
+                                <td>@movie.FopRating/10</td>
+                            </tr>
+                            <tr>
+                                <th>Runtime:</th>
+                                <td>@movie.Runtime</td>
+                            </tr>
+                            <tr>
+                                <th>Awards:</th>
+                                <td>@movie.Awards</td>
+                            </tr>
+                            <tr>
+                                <th>Box Office:</th>
+                                <td>@movie.BoxOffice</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <div class="container">
+            <table class="table report-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>One Oscar</th>
+                        <th>Best Quote</th>
+                        <th>Funniest Quote</th>
+                        <th>Netflix Remake</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movieReport in movieReports)
+                    {
+                        var user = users.FirstOrDefault(u => u.Sub == movieReport.Sub);
+                        <tr>
+                            <td>@user.Name</td>
+                            <td>@movieReport.OneOscar</td>
+                            <td>@movieReport.BestQuote</td>
+                            <td>@movieReport.FunniestQuote</td>
+                            <td>@movieReport.CanRemakeAsNetflixSeries</td>
+                            <td>@movieReport.FopRating/10</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string MovieId { get; set; }
+    private Movie movie;
+    private List<FopUser> users = new List<FopUser>();
+    private List<MovieReport> movieReports = new List<MovieReport>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchData();
+    }
+
+    private async Task FetchData()
+    {
+        try
+        {
+            movie = await httpClient.GetFromJsonAsync<Movie>($"https://localhost:7055/api/movies/{MovieId}");
+            movieReports = await httpClient.GetFromJsonAsync<List<MovieReport>>($"https://localhost:7055/api/MovieReport/getMovieReportsByMovieId?movieId={MovieId}");
+            users = await httpClient.GetFromJsonAsync<List<FopUser>>($"https://localhost:7055/api/Users/get-all-users");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+        }
+    }
+
+}

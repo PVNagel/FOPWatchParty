@@ -41,6 +41,24 @@ namespace FOPMovieAPI.Controllers
             }
         }
 
+        [HttpGet("getMovieReportsByMovieId")]
+        public async Task<IActionResult> GetMovieReportsByMovieId(int movieId)
+        {
+            try
+            {
+                var movieReports = await _dbContext.MovieReports
+                                                   .Where(r => r.MovieId == movieId)
+                                                   .ToListAsync();
+
+                return Ok(movieReports);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting movie reports by MovieId: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpPost("createMovieReport")]
         public async Task<IActionResult> CreateReport([FromBody] MovieReport movieReport)
         {

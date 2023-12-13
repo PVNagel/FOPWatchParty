@@ -15,6 +15,52 @@ namespace FOPMovieAPI.Controllers
             _dbContext = dbContext;
         }
 
+        [HttpGet]
+        [Route("get-user")]
+        public IActionResult GetUser(string userId)
+        {
+            try
+            {
+                var user = _dbContext.FopUsers.FirstOrDefault(u => u.Sub == userId);
+
+                if (user != null)
+                {
+                    return Ok(user);
+                }
+                else
+                {
+                    return NotFound("User not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpGet]
+        [Route("get-all-users")]
+        public IActionResult GetAllUsers()
+        {
+            try
+            {
+                List<FopUser> users = _dbContext.FopUsers.ToList();
+
+                if (users != null)
+                {
+                    return Ok(users);
+                }
+                else
+                {
+                    return NotFound("Not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpPost]
         [Route("add-user")]
         public IActionResult AddUser([FromBody] UserDataModel userData)
@@ -49,6 +95,7 @@ namespace FOPMovieAPI.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
     }
 
     public class UserDataModel

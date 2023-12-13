@@ -58,7 +58,8 @@ else
                     </td>
                     <td>
                         <div class="button-container">
-                            <button class="reportsButton" @onclick="OnInitializedAsync">Movie report</button>
+                            <button class="reportsButton" @onclick="() => MovieFopReport(movie)">Movie report</button>
+                            <button class="reportsButton" @onclick="OnInitializedAsync">My report</button>
                         </div>
                     </td>
                 </tr>
@@ -139,5 +140,10 @@ else
     private void MovieDetails(Movie movie)
     {
         navigation.NavigateTo($"/moviepage/{movie.imdbID}");
+    }
+
+    private void MovieFopReport(Movie movie)
+    {
+        navigation.NavigateTo($"/fopReport/{movie.MovieId}");
     }
 }
